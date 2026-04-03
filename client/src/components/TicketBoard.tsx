@@ -1,3 +1,12 @@
+import {
+  Inbox,
+  ListTodo,
+  Loader2,
+  Eye,
+  CheckCircle2,
+  XCircle,
+  type LucideIcon,
+} from 'lucide-react';
 import type { Ticket } from '../../shared/types';
 import TicketCard from './TicketCard';
 
@@ -7,13 +16,69 @@ interface TicketBoardProps {
   onRunTicket: (ticketId: number) => void;
 }
 
-const columns: { key: Ticket['status']; label: string; accent: string }[] = [
-  { key: 'backlog', label: 'Backlog', accent: 'bg-slate-500' },
-  { key: 'todo', label: 'To Do', accent: 'bg-blue-500' },
-  { key: 'in_progress', label: 'In Progress', accent: 'bg-yellow-500' },
-  { key: 'review', label: 'Review', accent: 'bg-purple-500' },
-  { key: 'done', label: 'Done', accent: 'bg-green-500' },
-  { key: 'failed', label: 'Failed', accent: 'bg-red-500' },
+const columns: {
+  key: Ticket['status'];
+  label: string;
+  icon: LucideIcon;
+  accent: string;
+  badgeBg: string;
+  badgeText: string;
+  iconColor: string;
+}[] = [
+  {
+    key: 'backlog',
+    label: 'Backlog',
+    icon: Inbox,
+    accent: 'bg-slate-500',
+    badgeBg: 'bg-slate-500/15',
+    badgeText: 'text-slate-400',
+    iconColor: 'text-slate-400',
+  },
+  {
+    key: 'todo',
+    label: 'To Do',
+    icon: ListTodo,
+    accent: 'bg-blue-500',
+    badgeBg: 'bg-blue-500/15',
+    badgeText: 'text-blue-400',
+    iconColor: 'text-blue-400',
+  },
+  {
+    key: 'in_progress',
+    label: 'In Progress',
+    icon: Loader2,
+    accent: 'bg-yellow-500',
+    badgeBg: 'bg-yellow-500/15',
+    badgeText: 'text-yellow-400',
+    iconColor: 'text-yellow-400',
+  },
+  {
+    key: 'review',
+    label: 'Review',
+    icon: Eye,
+    accent: 'bg-purple-500',
+    badgeBg: 'bg-purple-500/15',
+    badgeText: 'text-purple-400',
+    iconColor: 'text-purple-400',
+  },
+  {
+    key: 'done',
+    label: 'Done',
+    icon: CheckCircle2,
+    accent: 'bg-green-500',
+    badgeBg: 'bg-green-500/15',
+    badgeText: 'text-green-400',
+    iconColor: 'text-green-400',
+  },
+  {
+    key: 'failed',
+    label: 'Failed',
+    icon: XCircle,
+    accent: 'bg-red-500',
+    badgeBg: 'bg-red-500/15',
+    badgeText: 'text-red-400',
+    iconColor: 'text-red-400',
+  },
 ];
 
 export default function TicketBoard({
@@ -24,28 +89,42 @@ export default function TicketBoard({
   return (
     <div className="flex gap-4 overflow-x-auto pb-4">
       {columns.map((col) => {
+        const Icon = col.icon;
         const colTickets = tickets.filter((t) => t.status === col.key);
         return (
           <div
             key={col.key}
-            className="flex w-64 shrink-0 flex-col rounded-lg border border-slate-700 bg-slate-900/50"
+            className="flex w-72 shrink-0 flex-col rounded-xl border border-slate-700/50 bg-slate-900/50"
           >
             {/* Column header */}
-            <div className="flex items-center gap-2 border-b border-slate-700 px-3 py-2.5">
-              <span className={`h-2 w-2 rounded-full ${col.accent}`} />
-              <span className="text-sm font-medium text-slate-300">
+            <div className="flex items-center gap-2.5 border-b border-slate-700/50 px-4 py-3">
+              <div
+                className={`flex h-6 w-6 items-center justify-center rounded-md ${col.badgeBg}`}
+              >
+                <Icon
+                  className={`h-3.5 w-3.5 ${col.iconColor} ${
+                    col.key === 'in_progress' ? 'animate-spin' : ''
+                  }`}
+                />
+              </div>
+              <span className="text-sm font-semibold text-white">
                 {col.label}
               </span>
-              <span className="ml-auto rounded-full bg-slate-700 px-2 py-0.5 text-xs text-slate-400">
+              <span
+                className={`ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-medium ${col.badgeBg} ${col.badgeText}`}
+              >
                 {colTickets.length}
               </span>
             </div>
 
             {/* Cards */}
-            <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-2">
+            <div className="flex flex-1 flex-col gap-2 overflow-y-auto scroll-smooth p-2.5"
+              style={{ maxHeight: '70vh' }}
+            >
               {colTickets.length === 0 && (
-                <div className="py-6 text-center text-xs text-slate-600">
-                  No tickets
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Icon className={`mb-2 h-5 w-5 ${col.iconColor} opacity-30`} />
+                  <span className="text-xs text-slate-600">No tickets</span>
                 </div>
               )}
               {colTickets.map((ticket) => (

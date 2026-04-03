@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Plus, Bot, X } from 'lucide-react';
 import { useFetch } from '../hooks/useFetch';
 import { fetchApi } from '../api';
 import AgentCard from '../components/AgentCard';
@@ -89,25 +90,53 @@ export default function Agents() {
 
   return (
     <div className="space-y-6">
+      {/* Page header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-100">Agents</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-white">Agents</h1>
+          {agents && agents.length > 0 && (
+            <span className="inline-flex items-center rounded-full bg-indigo-600/20 px-2.5 py-0.5 text-xs font-medium text-indigo-400 ring-1 ring-inset ring-indigo-500/30">
+              {agents.length}
+            </span>
+          )}
+        </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
         >
-          {showForm ? 'Cancel' : 'Hire Agent'}
+          {showForm ? (
+            <>
+              <X className="h-4 w-4" />
+              Cancel
+            </>
+          ) : (
+            <>
+              <Plus className="h-4 w-4" />
+              Hire Agent
+            </>
+          )}
         </button>
       </div>
 
-      {/* Hire form */}
+      {/* Hire form slide-down panel */}
       {showForm && (
         <form
           onSubmit={handleCreate}
-          className="rounded-lg border border-slate-700 bg-slate-800 p-5 space-y-4"
+          className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-6 space-y-5"
         >
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex items-center justify-between border-b border-slate-700/50 pb-4">
+            <h2 className="text-lg font-semibold text-white">Hire a New Agent</h2>
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-700 hover:text-white"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">
+              <label className="mb-1.5 block text-sm font-medium text-slate-300">
                 Name
               </label>
               <input
@@ -115,12 +144,12 @@ export default function Agents() {
                 value={form.name}
                 onChange={(e) => updateField('name', e.target.value)}
                 placeholder="Agent name..."
-                className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 required
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">
+              <label className="mb-1.5 block text-sm font-medium text-slate-300">
                 Role
               </label>
               <input
@@ -128,18 +157,18 @@ export default function Agents() {
                 value={form.role}
                 onChange={(e) => updateField('role', e.target.value)}
                 placeholder="e.g. developer, researcher..."
-                className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 required
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">
+              <label className="mb-1.5 block text-sm font-medium text-slate-300">
                 Provider
               </label>
               <select
                 value={form.provider_id}
                 onChange={(e) => updateField('provider_id', e.target.value)}
-                className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-4 py-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 required
               >
                 <option value="">Select provider...</option>
@@ -151,7 +180,7 @@ export default function Agents() {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">
+              <label className="mb-1.5 block text-sm font-medium text-slate-300">
                 Model
               </label>
               <input
@@ -159,18 +188,18 @@ export default function Agents() {
                 value={form.model}
                 onChange={(e) => updateField('model', e.target.value)}
                 placeholder="e.g. gpt-4o, claude-sonnet-4-20250514..."
-                className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 required
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">
+              <label className="mb-1.5 block text-sm font-medium text-slate-300">
                 Reports To
               </label>
               <select
                 value={form.reports_to}
                 onChange={(e) => updateField('reports_to', e.target.value)}
-                className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-4 py-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               >
                 <option value="">None (top-level)</option>
                 {agents?.map((a) => (
@@ -181,7 +210,7 @@ export default function Agents() {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">
+              <label className="mb-1.5 block text-sm font-medium text-slate-300">
                 Budget Limit ($)
               </label>
               <input
@@ -190,12 +219,12 @@ export default function Agents() {
                 onChange={(e) => updateField('budget_limit', e.target.value)}
                 min="0"
                 step="0.01"
-                className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-300">
+            <label className="mb-1.5 block text-sm font-medium text-slate-300">
               System Prompt
             </label>
             <textarea
@@ -203,26 +232,41 @@ export default function Agents() {
               onChange={(e) => updateField('system_prompt', e.target.value)}
               placeholder="Optional system prompt for the agent..."
               rows={3}
-              className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-slate-600 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
-          >
-            {submitting ? 'Hiring...' : 'Hire Agent'}
-          </button>
+          <div className="flex justify-end border-t border-slate-700/50 pt-4">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
+            >
+              {submitting ? 'Hiring...' : 'Hire Agent'}
+            </button>
+          </div>
         </form>
       )}
 
       {/* Agent grid */}
       {agents && agents.length === 0 ? (
-        <div className="rounded-lg border border-slate-700 bg-slate-800 py-12 text-center">
-          <div className="text-slate-500">No agents yet. Hire one to get started.</div>
+        <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 py-16 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-700/50">
+            <Bot className="h-6 w-6 text-slate-500" />
+          </div>
+          <h3 className="text-sm font-medium text-white">No agents hired yet</h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Get started by hiring your first AI agent.
+          </p>
+          <button
+            onClick={() => setShowForm(true)}
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+          >
+            <Plus className="h-4 w-4" />
+            Hire Agent
+          </button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
           {agents?.map((agent) => (
             <AgentCard key={agent.id} agent={agent} onUpdate={handleUpdate} />
           ))}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ShieldCheck, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, RotateCcw, FileCheck } from 'lucide-react';
 import { useFetch } from '../hooks/useFetch';
 import { fetchApi } from '../api';
 import type { Checkpoint, ValidationRule, TicketVersion, Agent, Ticket } from '../../shared/types';
@@ -16,14 +17,17 @@ export default function Quality() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-100">Quality</h1>
-      <div className="flex gap-1 rounded-lg bg-slate-800 p-1">
+      <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-100">
+        <ShieldCheck className="h-7 w-7 text-indigo-400" />
+        Quality
+      </h1>
+      <div className="flex gap-1 rounded-xl bg-slate-800/50 p-1 border border-slate-700/50">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-              tab === t.key ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'
+            className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
+              tab === t.key ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/30'
             }`}
           >
             {t.label}
@@ -82,8 +86,8 @@ function CheckpointsSection() {
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
-            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-              statusFilter === s ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-400 hover:text-slate-200'
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
+              statusFilter === s ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-800/50 text-slate-400 hover:text-slate-200 hover:bg-slate-700/30'
             }`}
           >
             {s || 'All'}
@@ -92,13 +96,16 @@ function CheckpointsSection() {
       </div>
 
       {!filtered || filtered.length === 0 ? (
-        <div className="rounded-lg border border-slate-700 bg-slate-800 py-12 text-center text-slate-500">No checkpoints found.</div>
+        <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 py-16 text-center shadow-lg shadow-black/20">
+          <FileCheck className="mx-auto h-8 w-8 text-slate-600 mb-3" />
+          <p className="text-slate-500">No checkpoints found.</p>
+        </div>
       ) : (
         <div className="space-y-3">
           {filtered.map((cp) => {
             const statusColor = cp.status === 'approved' ? 'bg-green-500/20 text-green-400' : cp.status === 'rejected' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400';
             return (
-              <div key={cp.id} className="rounded-lg border border-slate-700 bg-slate-800 p-4 space-y-2">
+              <div key={cp.id} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-4 shadow-lg shadow-black/20 backdrop-blur-sm space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColor}`}>{cp.status}</span>
                   <span className="text-sm font-semibold text-slate-100">{cp.ticket_title || `Ticket #${cp.ticket_id}`}</span>
@@ -108,8 +115,8 @@ function CheckpointsSection() {
 
                 {cp.output_preview && (
                   <div>
-                    <button onClick={() => toggleExpand(cp.id)} className="text-xs text-indigo-400 hover:text-indigo-300">
-                      {expanded.has(cp.id) ? 'Collapse output' : 'Expand output'}
+                    <button onClick={() => toggleExpand(cp.id)} className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300">
+                      {expanded.has(cp.id) ? <><ChevronUp className="h-3 w-3" /> Collapse output</> : <><ChevronDown className="h-3 w-3" /> Expand output</>}
                     </button>
                     {expanded.has(cp.id) && (
                       <pre className="mt-2 max-h-48 overflow-auto rounded bg-slate-900 p-3 text-xs text-slate-300">{cp.output_preview}</pre>
@@ -132,21 +139,21 @@ function CheckpointsSection() {
                       onChange={(e) => setNotes((p) => ({ ...p, [cp.id]: e.target.value }))}
                       rows={1}
                       placeholder="Notes (optional)"
-                      className="flex-1 min-w-[200px] rounded-md border border-slate-600 bg-slate-700 px-3 py-1.5 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="flex-1 min-w-[200px] rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                     />
                     <button
                       onClick={() => handleResolve(cp.id, 'approved')}
                       disabled={submitting === cp.id}
-                      className="rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-500 disabled:opacity-50"
+                      className="flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2.5 text-xs font-medium text-white shadow-lg shadow-green-500/20 transition-all duration-200 hover:bg-green-500 disabled:opacity-50"
                     >
-                      Approve
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Approve
                     </button>
                     <button
                       onClick={() => handleResolve(cp.id, 'rejected')}
                       disabled={submitting === cp.id}
-                      className="rounded-md bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-500 disabled:opacity-50"
+                      className="flex items-center gap-1 rounded-lg bg-red-600 px-3 py-2.5 text-xs font-medium text-white shadow-lg shadow-red-500/20 transition-all duration-200 hover:bg-red-500 disabled:opacity-50"
                     >
-                      Reject
+                      <XCircle className="h-3.5 w-3.5" /> Reject
                     </button>
                   </div>
                 )}
