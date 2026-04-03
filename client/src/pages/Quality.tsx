@@ -341,11 +341,14 @@ function ValidationSection() {
       )}
 
       {!rules || rules.length === 0 ? (
-        <div className="rounded-lg border border-slate-700 bg-slate-800 py-12 text-center text-slate-500">No validation rules yet.</div>
+        <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 py-16 text-center shadow-lg shadow-black/20">
+          <FileCheck className="mx-auto h-8 w-8 text-slate-600 mb-3" />
+          <p className="text-slate-500">No validation rules yet.</p>
+        </div>
       ) : (
         <div className="space-y-3">
           {rules.map((r) => (
-            <div key={r.id} className="rounded-lg border border-slate-700 bg-slate-800 p-4">
+            <div key={r.id} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-4 shadow-lg shadow-black/20 backdrop-blur-sm">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -361,12 +364,12 @@ function ValidationSection() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <button onClick={() => { setTestModal(r); setTestText(''); setTestResult(null); }} className="rounded-md bg-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-600">
+                  <button onClick={() => { setTestModal(r); setTestText(''); setTestResult(null); }} className="rounded-lg bg-slate-700/50 px-3 py-1.5 text-xs font-medium text-slate-300 transition-all duration-200 hover:bg-slate-600/50">
                     Test
                   </button>
                   <button
                     onClick={() => handleToggle(r.id, r.enabled)}
-                    className={`rounded-md px-3 py-1.5 text-xs font-medium text-white ${r.enabled ? 'bg-slate-600 hover:bg-slate-500' : 'bg-indigo-600 hover:bg-indigo-500'}`}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium text-white transition-all duration-200 ${r.enabled ? 'bg-slate-600/50 hover:bg-slate-500/50' : 'bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-500/20'}`}
                   >
                     {r.enabled ? 'Disable' : 'Enable'}
                   </button>
