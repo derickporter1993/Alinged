@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useFetch } from '../hooks/useFetch';
 import { fetchApi } from '../api';
+import { Activity, MessageSquareText, TrendingUp, GitBranch, ChevronLeft, ChevronRight, Trash2, Plus } from 'lucide-react';
 import type { ConversationLog, CostForecast, TicketDependency, Agent, Ticket } from '../../shared/types';
 
 type Tab = 'logs' | 'forecast' | 'dependencies';
@@ -8,24 +9,28 @@ type Tab = 'logs' | 'forecast' | 'dependencies';
 export default function Observability() {
   const [tab, setTab] = useState<Tab>('logs');
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: 'logs', label: 'Conversation Logs' },
-    { key: 'forecast', label: 'Cost Forecast' },
-    { key: 'dependencies', label: 'Dependency Graph' },
+  const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
+    { key: 'logs', label: 'Conversation Logs', icon: <MessageSquareText className="h-4 w-4" /> },
+    { key: 'forecast', label: 'Cost Forecast', icon: <TrendingUp className="h-4 w-4" /> },
+    { key: 'dependencies', label: 'Dependency Graph', icon: <GitBranch className="h-4 w-4" /> },
   ];
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-100">Observability</h1>
-      <div className="flex gap-1 rounded-lg bg-slate-800 p-1">
+      <div className="flex items-center gap-3">
+        <Activity className="h-7 w-7 text-indigo-400" />
+        <h1 className="text-2xl font-bold text-slate-100">Observability</h1>
+      </div>
+      <div className="flex gap-1 rounded-xl bg-slate-800/50 p-1 border border-slate-700/50">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-              tab === t.key ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'
+            className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
+              tab === t.key ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/30'
             }`}
           >
+            {t.icon}
             {t.label}
           </button>
         ))}
@@ -89,28 +94,29 @@ function ConversationLogsSection() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-3">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-300">Agent</label>
+          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Agent</label>
           <select
             value={filterAgent}
             onChange={(e) => { setFilterAgent(e.target.value); setPage(1); }}
-            className="rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
           >
             <option value="">All Agents</option>
             {agents?.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-300">Ticket</label>
+          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Ticket</label>
           <select
             value={filterTicket}
             onChange={(e) => { setFilterTicket(e.target.value); setPage(1); }}
-            className="rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
           >
             <option value="">All Tickets</option>
             {tickets?.map((t) => <option key={t.id} value={t.id}>#{t.id} - {t.title}</option>)}
           </select>
         </div>
-        <button onClick={handleClearOld} className="rounded-md bg-red-600/80 px-3 py-2 text-sm font-medium text-white hover:bg-red-600">
+        <button onClick={handleClearOld} className="flex items-center gap-2 rounded-lg bg-red-600/80 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-red-600">
+          <Trash2 className="h-4 w-4" />
           Clear Old Logs
         </button>
       </div>
@@ -119,14 +125,14 @@ function ConversationLogsSection() {
       {error && <div className="text-red-400 py-8 text-center">Error: {error}</div>}
 
       {!loading && logs && logs.length === 0 && (
-        <div className="rounded-lg border border-slate-700 bg-slate-800 py-12 text-center text-slate-500">No conversation logs found.</div>
+        <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 py-16 text-center shadow-lg shadow-black/20 text-slate-500">No conversation logs found.</div>
       )}
 
       {logs && logs.length > 0 && (
         <>
           <div className="space-y-2">
             {logs.map((log) => (
-              <div key={log.id} className={`rounded-lg border p-3 ${roleStyle(log.role)}`}>
+              <div key={log.id} className={`rounded-xl border p-3 backdrop-blur-sm ${roleStyle(log.role)}`}>
                 <div className="mb-1 flex flex-wrap items-center gap-2 text-xs">
                   <span className={`rounded-full px-2 py-0.5 font-medium ${roleBadge(log.role)}`}>{log.role}</span>
                   {log.agent_name && <span className="text-slate-500">{log.agent_name}</span>}
@@ -143,17 +149,19 @@ function ConversationLogsSection() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page <= 1}
-              className="rounded-md bg-slate-700 px-3 py-1.5 text-sm text-slate-300 hover:bg-slate-600 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg bg-slate-700/50 px-3 py-1.5 text-sm text-slate-300 transition-all duration-200 hover:bg-slate-600/50 disabled:opacity-50"
             >
+              <ChevronLeft className="h-4 w-4" />
               Previous
             </button>
             <span className="text-sm text-slate-400">Page {page}</span>
             <button
               onClick={() => setPage((p) => p + 1)}
               disabled={logs.length < perPage}
-              className="rounded-md bg-slate-700 px-3 py-1.5 text-sm text-slate-300 hover:bg-slate-600 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg bg-slate-700/50 px-3 py-1.5 text-sm text-slate-300 transition-all duration-200 hover:bg-slate-600/50 disabled:opacity-50"
             >
               Next
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </>
@@ -163,6 +171,13 @@ function ConversationLogsSection() {
 }
 
 /* ─── Cost Forecast ─── */
+
+const STAT_CARD_COLORS: Record<string, { dot: string; icon: string }> = {
+  'border-blue-500': { dot: 'bg-blue-500', icon: 'text-blue-400' },
+  'border-indigo-500': { dot: 'bg-indigo-500', icon: 'text-indigo-400' },
+  'border-green-500': { dot: 'bg-green-500', icon: 'text-green-400' },
+  'border-amber-500': { dot: 'bg-amber-500', icon: 'text-amber-400' },
+};
 
 function CostForecastSection() {
   const { data: forecast, loading, error } = useFetch<CostForecast>('/api/observability/forecast');
@@ -181,15 +196,21 @@ function CostForecastSection() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {statCards.map((card) => (
-          <div key={card.label} className={`rounded-lg border-l-4 ${card.color} bg-slate-800 p-4`}>
-            <div className="text-sm text-slate-400">{card.label}</div>
-            <div className="mt-1 text-2xl font-bold text-slate-100">{card.value}</div>
-          </div>
-        ))}
+        {statCards.map((card) => {
+          const colors = STAT_CARD_COLORS[card.color] || { dot: 'bg-slate-500', icon: 'text-slate-400' };
+          return (
+            <div key={card.label} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-4 shadow-lg shadow-black/20 backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                <span className={`h-2 w-2 rounded-full ${colors.dot}`} />
+                <div className="text-xs font-medium uppercase tracking-wider text-slate-500">{card.label}</div>
+              </div>
+              <div className="mt-2 text-2xl font-bold text-slate-100">{card.value}</div>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="rounded-lg border border-indigo-500/30 bg-indigo-600/10 p-5">
+      <div className="rounded-xl border border-indigo-500/30 bg-indigo-600/10 p-5 shadow-lg shadow-black/20 backdrop-blur-sm">
         <h3 className="font-semibold text-indigo-300">Projection</h3>
         <p className="mt-2 text-slate-300">
           At current rates, you&apos;ll spend approximately{' '}
@@ -273,44 +294,45 @@ function DependencyGraphSection() {
             {blockedTicketIds.size} blocked ticket(s)
           </div>
         )}
-        <button onClick={() => setShowForm(!showForm)} className="ml-auto rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">
+        <button onClick={() => setShowForm(!showForm)} className="ml-auto flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30">
+          <Plus className="h-4 w-4" />
           {showForm ? 'Cancel' : 'Add Dependency'}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="rounded-lg border border-slate-700 bg-slate-800 p-5 space-y-4">
+        <form onSubmit={handleCreate} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-6 shadow-lg shadow-black/20 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Ticket</label>
-              <select value={form.ticket_id} onChange={(e) => setForm((p) => ({ ...p, ticket_id: e.target.value }))} required className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Ticket</label>
+              <select value={form.ticket_id} onChange={(e) => setForm((p) => ({ ...p, ticket_id: e.target.value }))} required className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                 <option value="">Select ticket...</option>
                 {tickets?.map((t) => <option key={t.id} value={t.id}>#{t.id} - {t.title}</option>)}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Depends On</label>
-              <select value={form.depends_on_id} onChange={(e) => setForm((p) => ({ ...p, depends_on_id: e.target.value }))} required className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Depends On</label>
+              <select value={form.depends_on_id} onChange={(e) => setForm((p) => ({ ...p, depends_on_id: e.target.value }))} required className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                 <option value="">Select ticket...</option>
                 {tickets?.map((t) => <option key={t.id} value={t.id}>#{t.id} - {t.title}</option>)}
               </select>
             </div>
           </div>
-          <button type="submit" disabled={submitting} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+          <button type="submit" disabled={submitting} className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30 disabled:opacity-50">
             {submitting ? 'Adding...' : 'Add Dependency'}
           </button>
         </form>
       )}
 
       {!deps || deps.length === 0 ? (
-        <div className="rounded-lg border border-slate-700 bg-slate-800 py-12 text-center text-slate-500">No dependencies defined.</div>
+        <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 py-16 text-center shadow-lg shadow-black/20 text-slate-500">No dependencies defined.</div>
       ) : (
         <div className="space-y-2">
           {deps.map((d) => {
             const isBlocked = blockedTicketIds.has(d.ticket_id);
             const depTicketStatus = tickets?.find((t) => t.id === d.depends_on_id)?.status;
             return (
-              <div key={d.id} className={`flex flex-wrap items-center gap-3 rounded-lg border p-3 ${isBlocked ? 'border-red-500/30 bg-red-600/5' : 'border-slate-700 bg-slate-800'}`}>
+              <div key={d.id} className={`flex flex-wrap items-center gap-3 rounded-xl border p-3 backdrop-blur-sm ${isBlocked ? 'border-red-500/30 bg-red-600/5' : 'border-slate-700/50 bg-slate-800/50'}`}>
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <span className={`font-medium text-sm ${isBlocked ? 'text-red-300' : 'text-slate-100'}`}>
                     {d.ticket_title || `Ticket #${d.ticket_id}`}
@@ -328,7 +350,10 @@ function DependencyGraphSection() {
                     <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-400">blocked</span>
                   )}
                 </div>
-                <button onClick={() => handleDelete(d.id)} className="shrink-0 text-xs text-red-400 hover:text-red-300">Delete</button>
+                <button onClick={() => handleDelete(d.id)} className="shrink-0 flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors duration-200">
+                  <Trash2 className="h-3 w-3" />
+                  Delete
+                </button>
               </div>
             );
           })}

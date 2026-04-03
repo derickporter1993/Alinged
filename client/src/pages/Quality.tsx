@@ -456,7 +456,7 @@ function VersionsSection() {
             <div key={v.id} className="relative pl-10 pb-4">
               {/* Dot */}
               <div className="absolute left-2.5 top-4 h-3 w-3 rounded-full border-2 border-indigo-500 bg-slate-900" />
-              <div className="rounded-lg border border-slate-700 bg-slate-800 p-4 space-y-2">
+              <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-4 shadow-lg shadow-black/20 backdrop-blur-sm space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded bg-indigo-600/20 px-2 py-0.5 text-xs font-semibold text-indigo-400">v{v.version_number}</span>
                   <span className="text-xs text-slate-500">{v.agent_name || `Agent #${v.agent_id}`}</span>
@@ -464,14 +464,14 @@ function VersionsSection() {
                   <button
                     onClick={() => handleRollback(v.id)}
                     disabled={rollingBack === v.id}
-                    className="ml-auto rounded-md bg-amber-600 px-3 py-1 text-xs font-medium text-white hover:bg-amber-500 disabled:opacity-50"
+                    className="ml-auto flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white shadow-lg shadow-amber-500/20 transition-all duration-200 hover:bg-amber-500 disabled:opacity-50"
                   >
-                    {rollingBack === v.id ? 'Rolling back...' : 'Rollback'}
+                    <RotateCcw className="h-3 w-3" /> {rollingBack === v.id ? 'Rolling back...' : 'Rollback'}
                   </button>
                 </div>
                 <div>
-                  <button onClick={() => toggleExpand(v.id)} className="text-xs text-indigo-400 hover:text-indigo-300">
-                    {expanded.has(v.id) ? 'Collapse' : 'Expand result'}
+                  <button onClick={() => toggleExpand(v.id)} className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300">
+                    {expanded.has(v.id) ? <><ChevronUp className="h-3 w-3" /> Collapse</> : <><ChevronDown className="h-3 w-3" /> Expand result</>}
                   </button>
                   {expanded.has(v.id) && (
                     <pre className="mt-2 max-h-48 overflow-auto rounded bg-slate-900 p-3 text-xs text-slate-300">{v.result}</pre>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useFetch } from '../hooks/useFetch';
 import { fetchApi } from '../api';
+import { Timer, Clock, Zap, Play, Power, Plus, Calendar } from 'lucide-react';
 import type { Schedule, WorkflowTrigger, Goal, Agent } from '../../shared/types';
 
 type Tab = 'schedules' | 'triggers' | 'autopilot';
@@ -16,16 +17,19 @@ export default function Automation() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-100">Automation</h1>
-      <div className="flex gap-1 rounded-lg bg-slate-800 p-1">
+      <h1 className="flex items-center gap-3 text-2xl font-bold text-slate-100">
+        <Timer className="h-7 w-7 text-indigo-400" />
+        Automation
+      </h1>
+      <div className="flex gap-1 rounded-xl bg-slate-800/50 p-1 border border-slate-700/50">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
               tab === t.key
-                ? 'bg-indigo-600 text-white'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/30'
             }`}
           >
             {t.label}
@@ -110,46 +114,46 @@ function SchedulesSection() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <button onClick={() => setShowForm(!showForm)} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">
-          {showForm ? 'Cancel' : 'New Schedule'}
+        <button onClick={() => setShowForm(!showForm)} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30">
+          {showForm ? 'Cancel' : <><Plus className="h-4 w-4" /> New Schedule</>}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="rounded-lg border border-slate-700 bg-slate-800 p-5 space-y-4">
+        <form onSubmit={handleCreate} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-6 shadow-lg shadow-black/20 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Title</label>
-              <input type="text" value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} required className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Schedule title" />
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Title</label>
+              <input type="text" value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} required className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder="Schedule title" />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Cron Expression</label>
-              <input type="text" value={form.cron_expression} onChange={(e) => setForm((p) => ({ ...p, cron_expression: e.target.value }))} required className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0 9 * * 1" />
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Cron Expression</label>
+              <input type="text" value={form.cron_expression} onChange={(e) => setForm((p) => ({ ...p, cron_expression: e.target.value }))} required className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder="0 9 * * 1" />
               <p className="mt-1 text-xs text-slate-500">e.g. &quot;0 9 * * 1&quot; = Every Monday at 9am</p>
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-300">Description</label>
-            <input type="text" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Optional description" />
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Description</label>
+            <input type="text" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder="Optional description" />
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Goal</label>
-              <select value={form.goal_id} onChange={(e) => setForm((p) => ({ ...p, goal_id: e.target.value }))} className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Goal</label>
+              <select value={form.goal_id} onChange={(e) => setForm((p) => ({ ...p, goal_id: e.target.value }))} className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                 <option value="">None</option>
                 {goals?.map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Agent</label>
-              <select value={form.agent_id} onChange={(e) => setForm((p) => ({ ...p, agent_id: e.target.value }))} className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Agent</label>
+              <select value={form.agent_id} onChange={(e) => setForm((p) => ({ ...p, agent_id: e.target.value }))} className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                 <option value="">None</option>
                 {agents?.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Priority</label>
-              <select value={form.priority} onChange={(e) => setForm((p) => ({ ...p, priority: e.target.value }))} className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Priority</label>
+              <select value={form.priority} onChange={(e) => setForm((p) => ({ ...p, priority: e.target.value }))} className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                 <option value="1">1 - Highest</option>
                 <option value="2">2 - High</option>
                 <option value="3">3 - Medium</option>
@@ -158,21 +162,22 @@ function SchedulesSection() {
               </select>
             </div>
           </div>
-          <button type="submit" disabled={submitting} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+          <button type="submit" disabled={submitting} className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30 disabled:opacity-50">
             {submitting ? 'Creating...' : 'Create Schedule'}
           </button>
         </form>
       )}
 
       {!schedules || schedules.length === 0 ? (
-        <div className="rounded-lg border border-slate-700 bg-slate-800 py-12 text-center text-slate-500">No schedules yet.</div>
+        <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 py-16 text-center shadow-lg shadow-black/20 text-slate-500">No schedules yet.</div>
       ) : (
         <div className="space-y-3">
           {schedules.map((s) => (
-            <div key={s.id} className="rounded-lg border border-slate-700 bg-slate-800 p-4">
+            <div key={s.id} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-4 shadow-lg shadow-black/20 backdrop-blur-sm">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-indigo-400 shrink-0" />
                     <h3 className="font-semibold text-slate-100 truncate">{s.title}</h3>
                     <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${s.enabled ? 'bg-green-500/20 text-green-400' : 'bg-slate-600/50 text-slate-400'}`}>
                       {s.enabled ? 'Enabled' : 'Disabled'}
@@ -180,22 +185,22 @@ function SchedulesSection() {
                   </div>
                   {s.description && <p className="mt-1 text-sm text-slate-400">{s.description}</p>}
                   <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
-                    <span className="font-mono bg-slate-700/50 rounded px-2 py-0.5">{s.cron_expression}</span>
+                    <span className="font-mono bg-slate-900/50 border border-slate-700/50 rounded-lg px-2 py-0.5">{s.cron_expression}</span>
                     {s.agent_name && <span>Agent: {s.agent_name}</span>}
                     {s.goal_title && <span>Goal: {s.goal_title}</span>}
-                    {s.next_run && <span>Next: {new Date(s.next_run).toLocaleString()}</span>}
+                    {s.next_run && <span><Clock className="inline h-3 w-3 mr-0.5" />Next: {new Date(s.next_run).toLocaleString()}</span>}
                     {s.last_run && <span>Last: {new Date(s.last_run).toLocaleString()}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <button onClick={() => handleTrigger(s.id)} className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-500">
-                    Trigger Now
+                  <button onClick={() => handleTrigger(s.id)} className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-medium text-white shadow-lg shadow-emerald-500/20 transition-all duration-200 hover:bg-emerald-500">
+                    <Play className="h-3 w-3" /> Trigger Now
                   </button>
                   <button
                     onClick={() => handleToggle(s.id, s.enabled)}
-                    className={`rounded-md px-3 py-1.5 text-xs font-medium text-white ${s.enabled ? 'bg-slate-600 hover:bg-slate-500' : 'bg-indigo-600 hover:bg-indigo-500'}`}
+                    className={`inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-medium text-white transition-all duration-200 ${s.enabled ? 'bg-slate-600 hover:bg-slate-500' : 'bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-500/20'}`}
                   >
-                    {s.enabled ? 'Disable' : 'Enable'}
+                    <Power className="h-3 w-3" /> {s.enabled ? 'Disable' : 'Enable'}
                   </button>
                 </div>
               </div>
@@ -274,49 +279,49 @@ function TriggersSection() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <button onClick={() => setShowForm(!showForm)} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">
-          {showForm ? 'Cancel' : 'New Trigger'}
+        <button onClick={() => setShowForm(!showForm)} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30">
+          {showForm ? 'Cancel' : <><Plus className="h-4 w-4" /> New Trigger</>}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="rounded-lg border border-slate-700 bg-slate-800 p-5 space-y-4">
+        <form onSubmit={handleCreate} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-6 shadow-lg shadow-black/20 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Name</label>
-              <input type="text" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} required className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Trigger name" />
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Name</label>
+              <input type="text" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} required className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder="Trigger name" />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Trigger Event</label>
-              <select value={form.trigger_event} onChange={(e) => setForm((p) => ({ ...p, trigger_event: e.target.value }))} className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Trigger Event</label>
+              <select value={form.trigger_event} onChange={(e) => setForm((p) => ({ ...p, trigger_event: e.target.value }))} className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                 {TRIGGER_EVENTS.map((ev) => <option key={ev} value={ev}>{ev}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-300">Condition (JSON)</label>
-            <textarea value={form.condition_config} onChange={(e) => setForm((p) => ({ ...p, condition_config: e.target.value }))} rows={2} className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm font-mono text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder='{"priority": 1}' />
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Condition (JSON)</label>
+            <textarea value={form.condition_config} onChange={(e) => setForm((p) => ({ ...p, condition_config: e.target.value }))} rows={2} className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm font-mono text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder='{"priority": 1}' />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Action Type</label>
-              <select value={form.action_type} onChange={(e) => setForm((p) => ({ ...p, action_type: e.target.value }))} className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Action Type</label>
+              <select value={form.action_type} onChange={(e) => setForm((p) => ({ ...p, action_type: e.target.value }))} className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                 {ACTION_TYPES.map((at) => <option key={at} value={at}>{at}</option>)}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Action Config (JSON)</label>
-              <textarea value={form.action_config} onChange={(e) => setForm((p) => ({ ...p, action_config: e.target.value }))} rows={2} className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm font-mono text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder='{"title": "Follow-up task"}' />
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Action Config (JSON)</label>
+              <textarea value={form.action_config} onChange={(e) => setForm((p) => ({ ...p, action_config: e.target.value }))} rows={2} className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm font-mono text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder='{"title": "Follow-up task"}' />
             </div>
           </div>
-          <button type="submit" disabled={submitting} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+          <button type="submit" disabled={submitting} className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30 disabled:opacity-50">
             {submitting ? 'Creating...' : 'Create Trigger'}
           </button>
         </form>
       )}
 
       {!triggers || triggers.length === 0 ? (
-        <div className="rounded-lg border border-slate-700 bg-slate-800 py-12 text-center text-slate-500">No workflow triggers yet.</div>
+        <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 py-16 text-center shadow-lg shadow-black/20 text-slate-500">No workflow triggers yet.</div>
       ) : (
         <div className="space-y-3">
           {triggers.map((t) => {
@@ -325,10 +330,11 @@ function TriggersSection() {
             let condPreview = '';
             try { if (t.condition_config) { condPreview = t.condition_config.length > 60 ? t.condition_config.slice(0, 60) + '...' : t.condition_config; } } catch { /* ignore */ }
             return (
-              <div key={t.id} className="rounded-lg border border-slate-700 bg-slate-800 p-4">
+              <div key={t.id} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-4 shadow-lg shadow-black/20 backdrop-blur-sm">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-indigo-400 shrink-0" />
                       <h3 className="font-semibold text-slate-100">{t.name}</h3>
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${eventColors[t.trigger_event] || 'bg-slate-600/50 text-slate-400'}`}>
                         {t.trigger_event}
@@ -344,9 +350,9 @@ function TriggersSection() {
                   </div>
                   <button
                     onClick={() => handleToggle(t.id, t.enabled)}
-                    className={`shrink-0 rounded-md px-3 py-1.5 text-xs font-medium text-white ${t.enabled ? 'bg-slate-600 hover:bg-slate-500' : 'bg-indigo-600 hover:bg-indigo-500'}`}
+                    className={`inline-flex items-center gap-1 shrink-0 rounded-lg px-3 py-2 text-xs font-medium text-white transition-all duration-200 ${t.enabled ? 'bg-slate-600 hover:bg-slate-500' : 'bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-500/20'}`}
                   >
-                    {t.enabled ? 'Disable' : 'Enable'}
+                    <Power className="h-3 w-3" /> {t.enabled ? 'Disable' : 'Enable'}
                   </button>
                 </div>
               </div>
@@ -380,8 +386,8 @@ function AutopilotSection() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-indigo-500/30 bg-indigo-600/10 p-4">
-        <h3 className="font-semibold text-indigo-300">What is Autopilot?</h3>
+      <div className="rounded-xl border border-indigo-500/30 bg-indigo-600/10 p-4 shadow-lg shadow-black/20 backdrop-blur-sm">
+        <h3 className="flex items-center gap-2 font-semibold text-indigo-300"><Zap className="h-4 w-4" /> What is Autopilot?</h3>
         <p className="mt-1 text-sm text-slate-400">
           When autopilot is enabled for a goal, the system will automatically create tickets, assign agents,
           and execute tasks without requiring manual approval. Agents will autonomously break down the goal
@@ -390,11 +396,11 @@ function AutopilotSection() {
       </div>
 
       {!goals || goals.length === 0 ? (
-        <div className="rounded-lg border border-slate-700 bg-slate-800 py-12 text-center text-slate-500">No goals yet. Create goals first.</div>
+        <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 py-16 text-center shadow-lg shadow-black/20 text-slate-500">No goals yet. Create goals first.</div>
       ) : (
         <div className="space-y-3">
           {goals.map((g) => (
-            <div key={g.id} className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-800 p-4">
+            <div key={g.id} className="flex items-center justify-between rounded-xl border border-slate-700/50 bg-slate-800/50 p-4 shadow-lg shadow-black/20 backdrop-blur-sm">
               <div>
                 <h3 className="font-semibold text-slate-100">{g.title}</h3>
                 <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
@@ -408,13 +414,13 @@ function AutopilotSection() {
               </div>
               <button
                 onClick={() => handleToggle(g.id, g.autopilot)}
-                className={`shrink-0 rounded-md px-4 py-2 text-sm font-medium text-white transition-colors ${
+                className={`inline-flex items-center gap-1.5 shrink-0 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 ${
                   g.autopilot
-                    ? 'bg-emerald-600 hover:bg-emerald-500'
+                    ? 'bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-500/20'
                     : 'bg-slate-600 hover:bg-slate-500'
                 }`}
               >
-                {g.autopilot ? 'Autopilot ON' : 'Autopilot OFF'}
+                <Power className="h-4 w-4" /> {g.autopilot ? 'Autopilot ON' : 'Autopilot OFF'}
               </button>
             </div>
           ))}

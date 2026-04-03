@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Brain, Trophy, Zap, Play } from 'lucide-react';
 import { useFetch } from '../hooks/useFetch';
 import { fetchApi } from '../api';
 import type { AgentScore, Ticket } from '../../shared/types';
@@ -16,14 +17,17 @@ export default function Intelligence() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-100">Intelligence</h1>
-      <div className="flex gap-1 rounded-lg bg-slate-800 p-1">
+      <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-100">
+        <Brain className="h-7 w-7 text-indigo-400" />
+        Intelligence
+      </h1>
+      <div className="flex gap-1 rounded-xl bg-slate-800/50 p-1 border border-slate-700/50">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-              tab === t.key ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'
+            className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
+              tab === t.key ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/30'
             }`}
           >
             {t.label}
@@ -94,12 +98,15 @@ function ScoreboardSection() {
   return (
     <div>
       {!sorted.length ? (
-        <div className="rounded-lg border border-slate-700 bg-slate-800 py-12 text-center text-slate-500">No agent scores available.</div>
+        <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 py-16 text-center shadow-lg shadow-black/20">
+          <Trophy className="mx-auto h-8 w-8 text-slate-600 mb-3" />
+          <p className="text-slate-500">No agent scores available.</p>
+        </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-slate-700">
+        <div className="overflow-x-auto rounded-xl border border-slate-700/50 shadow-lg shadow-black/20">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-700 bg-slate-800/80">
+              <tr className="border-b border-slate-700/50 bg-slate-800/80">
                 <SortHeader label="Agent" field="agent_name" />
                 <SortHeader label="Role" field="role" />
                 <SortHeader label="Tasks" field="total_tasks" />
@@ -110,7 +117,7 @@ function ScoreboardSection() {
             </thead>
             <tbody className="divide-y divide-slate-700/50">
               {sorted.map((s) => (
-                <tr key={s.agent_id} className="bg-slate-800/40 transition-colors hover:bg-slate-800/70">
+                <tr key={s.agent_id} className="bg-slate-800/30 transition-colors hover:bg-slate-800/60">
                   <td className="px-4 py-2.5 font-medium text-slate-100">{s.agent_name}</td>
                   <td className="px-4 py-2.5 text-slate-300">{s.role}</td>
                   <td className="px-4 py-2.5 text-slate-300">{s.total_tasks}</td>
@@ -172,26 +179,26 @@ function AssignmentSection() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-slate-700 bg-slate-800 p-5 space-y-4">
+      <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-6 shadow-lg shadow-black/20 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-300">Unassigned Ticket</label>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Unassigned Ticket</label>
             <select
               value={selectedTicket}
               onChange={(e) => { setSelectedTicket(e.target.value); setResult(null); }}
-              className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
             >
               <option value="">Select ticket...</option>
               {unassigned?.map((t) => <option key={t.id} value={t.id}>#{t.id} - {t.title}</option>)}
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-300">Preferred Role (optional)</label>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Preferred Role (optional)</label>
             <input
               type="text"
               value={preferredRole}
               onChange={(e) => setPreferredRole(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               placeholder="e.g. developer, reviewer"
             />
           </div>
@@ -199,9 +206,9 @@ function AssignmentSection() {
         <button
           onClick={handleAssign}
           disabled={!selectedTicket || submitting}
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30 disabled:opacity-50"
         >
-          {submitting ? 'Assigning...' : 'Auto-Assign'}
+          <Zap className="h-4 w-4" /> {submitting ? 'Assigning...' : 'Auto-Assign'}
         </button>
 
         {result && (
@@ -274,37 +281,37 @@ function MultiStepSection() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-slate-700 bg-slate-800 p-5 space-y-4">
+      <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-6 shadow-lg shadow-black/20 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-300">Select Ticket</label>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Select Ticket</label>
             <select
               value={selectedTicket}
               onChange={(e) => { setSelectedTicket(e.target.value); setSteps([]); }}
-              className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
             >
               <option value="">Select ticket...</option>
               {tickets?.map((t) => <option key={t.id} value={t.id}>#{t.id} - {t.title}</option>)}
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-300">Max Steps</label>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Max Steps</label>
             <input
               type="number"
               min={1}
               max={20}
               value={maxSteps}
               onChange={(e) => setMaxSteps(Number(e.target.value))}
-              className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
             />
           </div>
         </div>
         <button
           onClick={handleRun}
           disabled={!selectedTicket || running}
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30 disabled:opacity-50"
         >
-          {running ? 'Running...' : 'Run Multi-Step'}
+          <Play className="h-4 w-4" /> {running ? 'Running...' : 'Run Multi-Step'}
         </button>
 
         {running && (
@@ -322,7 +329,7 @@ function MultiStepSection() {
       {steps.length > 0 && (
         <div className="space-y-3">
           {steps.map((s) => (
-            <div key={s.step} className="rounded-lg border border-slate-700 bg-slate-800 p-4 space-y-2">
+            <div key={s.step} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-4 shadow-lg shadow-black/20 backdrop-blur-sm space-y-2">
               <div className="flex items-center gap-2">
                 <span className="rounded bg-indigo-600/20 px-2 py-0.5 text-xs font-semibold text-indigo-400">Step {s.step}</span>
                 {s.agent_name && <span className="text-xs text-slate-500">{s.agent_name}</span>}

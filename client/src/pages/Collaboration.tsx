@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useFetch } from '../hooks/useFetch';
 import { fetchApi } from '../api';
+import { MessageSquare, GitPullRequest, BookOpen, Send, Search, Plus, ArrowRight, Edit3, Trash2 } from 'lucide-react';
 import type {
   Agent,
   AgentMessage,
@@ -23,16 +24,19 @@ export default function Collaboration() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-100">Collaboration</h1>
-      <div className="flex gap-2 border-b border-slate-700 pb-2">
+      <h1 className="flex items-center gap-3 text-2xl font-bold text-slate-100">
+        <MessageSquare className="h-7 w-7 text-indigo-400" />
+        Collaboration
+      </h1>
+      <div className="flex gap-1 rounded-xl bg-slate-800/50 p-1 border border-slate-700/50">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`rounded-t-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
               tab === t.key
-                ? 'bg-indigo-600/20 text-indigo-400 border-b-2 border-indigo-400'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/30'
             }`}
           >
             {t.label}
@@ -99,54 +103,58 @@ function MessagesSection() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
-        <select
-          value={filterAgent}
-          onChange={(e) => setFilterAgent(e.target.value)}
-          className="rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          <option value="">All Agents</option>
-          {agents?.map((a) => (
-            <option key={a.id} value={a.id}>{a.name}</option>
-          ))}
-        </select>
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <select
+            value={filterAgent}
+            onChange={(e) => setFilterAgent(e.target.value)}
+            className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 pl-10 pr-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+          >
+            <option value="">All Agents</option>
+            {agents?.map((a) => (
+              <option key={a.id} value={a.id}>{a.name}</option>
+            ))}
+          </select>
+        </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30"
         >
-          {showForm ? 'Cancel' : 'New Message'}
+          {showForm ? 'Cancel' : <><Plus className="h-4 w-4" /> New Message</>}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSend} className="rounded-lg border border-slate-700 bg-slate-800 p-5 space-y-4">
+        <form onSubmit={handleSend} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-6 shadow-lg shadow-black/20 space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">From Agent</label>
-              <select value={fromAgent} onChange={(e) => setFromAgent(e.target.value)} required className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">From Agent</label>
+              <select value={fromAgent} onChange={(e) => setFromAgent(e.target.value)} required className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                 <option value="">Select...</option>
                 {agents?.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">To Agent</label>
-              <select value={toAgent} onChange={(e) => setToAgent(e.target.value)} required className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">To Agent</label>
+              <select value={toAgent} onChange={(e) => setToAgent(e.target.value)} required className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                 <option value="">Select...</option>
                 {agents?.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Ticket (optional)</label>
-              <select value={ticketId} onChange={(e) => setTicketId(e.target.value)} className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Ticket (optional)</label>
+              <select value={ticketId} onChange={(e) => setTicketId(e.target.value)} className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                 <option value="">None</option>
                 {tickets?.map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-300">Content</label>
-            <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={3} required placeholder="Type message..." className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Content</label>
+            <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={3} required placeholder="Type message..." className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
           </div>
-          <button type="submit" disabled={submitting} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+          <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30 disabled:opacity-50">
+            <Send className="h-4 w-4" />
             {submitting ? 'Sending...' : 'Send Message'}
           </button>
         </form>
@@ -154,16 +162,16 @@ function MessagesSection() {
 
       <div className="space-y-3">
         {filtered && filtered.length === 0 ? (
-          <div className="rounded-lg border border-slate-700 bg-slate-800 py-12 text-center text-slate-500">No messages yet.</div>
+          <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 py-16 text-center shadow-lg shadow-black/20 text-slate-500">No messages yet.</div>
         ) : (
           filtered?.map((msg) => {
             const isLeft = msg.from_agent_id <= (msg.to_agent_id ?? 0);
             return (
               <div key={msg.id} className={`flex ${isLeft ? 'justify-start' : 'justify-end'}`}>
-                <div className={`max-w-lg rounded-lg p-4 ${isLeft ? 'bg-slate-800 border border-slate-700' : 'bg-indigo-600/20 border border-indigo-500/30'}`}>
+                <div className={`max-w-lg rounded-xl p-4 shadow-lg shadow-black/20 ${isLeft ? 'bg-slate-800/50 border border-slate-700/50' : 'bg-indigo-600/20 border border-indigo-500/30'}`}>
                   <div className="mb-1 flex items-center gap-2 text-xs text-slate-400">
                     <span className="font-semibold text-indigo-400">{msg.from_agent_name ?? `Agent #${msg.from_agent_id}`}</span>
-                    <span>→</span>
+                    <ArrowRight className="h-3 w-3 text-slate-500" />
                     <span className="font-semibold text-slate-300">{msg.to_agent_name ?? `Agent #${msg.to_agent_id}`}</span>
                   </div>
                   <p className="text-sm text-slate-100 whitespace-pre-wrap">{msg.content}</p>
@@ -257,47 +265,47 @@ function ReviewChainsSection() {
 
   return (
     <div className="space-y-4">
-      <button onClick={() => setShowForm(!showForm)} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">
-        {showForm ? 'Cancel' : 'New Review Chain'}
+      <button onClick={() => setShowForm(!showForm)} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30">
+        {showForm ? 'Cancel' : <><Plus className="h-4 w-4" /> New Review Chain</>}
       </button>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="rounded-lg border border-slate-700 bg-slate-800 p-5 space-y-4">
+        <form onSubmit={handleCreate} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-6 shadow-lg shadow-black/20 space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-300">Chain Name</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. Code Review Pipeline" className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Chain Name</label>
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. Code Review Pipeline" className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
           </div>
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-300">Steps</label>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Steps</label>
             {steps.map((step, idx) => (
-              <div key={idx} className="flex flex-wrap items-center gap-2 rounded-md bg-slate-700/50 p-2">
+              <div key={idx} className="flex flex-wrap items-center gap-2 rounded-lg bg-slate-900/50 border border-slate-700/50 p-2">
                 <span className="text-xs text-slate-400 w-6 text-center">{step.order}.</span>
-                <select value={step.agent_id} onChange={(e) => updateStep(idx, 'agent_id', e.target.value)} className="rounded-md border border-slate-600 bg-slate-700 px-2 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <select value={step.agent_id} onChange={(e) => updateStep(idx, 'agent_id', e.target.value)} className="rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                   {agents?.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
-                <input type="text" value={step.role} onChange={(e) => updateStep(idx, 'role', e.target.value)} placeholder="Role (e.g. reviewer)" className="flex-1 min-w-[120px] rounded-md border border-slate-600 bg-slate-700 px-2 py-1 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                <button type="button" onClick={() => removeStep(idx)} className="text-red-400 hover:text-red-300 text-xs">Remove</button>
+                <input type="text" value={step.role} onChange={(e) => updateStep(idx, 'role', e.target.value)} placeholder="Role (e.g. reviewer)" className="flex-1 min-w-[120px] rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
+                <button type="button" onClick={() => removeStep(idx)} className="inline-flex items-center gap-1 text-red-400 hover:text-red-300 text-xs"><Trash2 className="h-3 w-3" /> Remove</button>
               </div>
             ))}
-            <button type="button" onClick={addStep} className="text-sm text-indigo-400 hover:text-indigo-300">+ Add Step</button>
+            <button type="button" onClick={addStep} className="inline-flex items-center gap-1 text-sm text-indigo-400 hover:text-indigo-300"><Plus className="h-4 w-4" /> Add Step</button>
           </div>
-          <button type="submit" disabled={submitting} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+          <button type="submit" disabled={submitting} className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30 disabled:opacity-50">
             {submitting ? 'Creating...' : 'Create Chain'}
           </button>
         </form>
       )}
 
       {chains && chains.length === 0 ? (
-        <div className="rounded-lg border border-slate-700 bg-slate-800 py-12 text-center text-slate-500">No review chains yet.</div>
+        <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 py-16 text-center shadow-lg shadow-black/20 text-slate-500">No review chains yet.</div>
       ) : (
         <div className="space-y-4">
           {chains?.map((chain) => {
             const parsedSteps: ReviewChainStep[] = JSON.parse(chain.steps || '[]');
             return (
-              <div key={chain.id} className="rounded-lg border border-slate-700 bg-slate-800 p-5 space-y-3">
+              <div key={chain.id} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-5 shadow-lg shadow-black/20 backdrop-blur-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-slate-100">{chain.name}</h3>
-                  <button onClick={() => handleDelete(chain.id)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
+                  <button onClick={() => handleDelete(chain.id)} className="inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300"><Trash2 className="h-3 w-3" /> Delete</button>
                 </div>
                 {/* Pipeline visualization */}
                 <div className="flex flex-wrap items-center gap-2 overflow-x-auto">
@@ -305,11 +313,11 @@ function ReviewChainsSection() {
                     const agent = agents?.find((a) => a.id === step.agent_id);
                     return (
                       <div key={idx} className="flex items-center gap-2">
-                        <div className="rounded-md bg-indigo-600/20 border border-indigo-500/30 px-3 py-1.5 text-xs">
+                        <div className="rounded-lg bg-indigo-600/20 border border-indigo-500/30 px-3 py-1.5 text-xs">
                           <span className="font-semibold text-indigo-400">{agent?.name ?? `Agent #${step.agent_id}`}</span>
                           <span className="text-slate-400 ml-1">({step.role})</span>
                         </div>
-                        {idx < parsedSteps.length - 1 && <span className="text-slate-500">→</span>}
+                        {idx < parsedSteps.length - 1 && <ArrowRight className="h-4 w-4 text-slate-500" />}
                       </div>
                     );
                   })}
@@ -321,12 +329,12 @@ function ReviewChainsSection() {
                     placeholder="Ticket ID"
                     value={runTicketId[chain.id] ?? ''}
                     onChange={(e) => setRunTicketId({ ...runTicketId, [chain.id]: e.target.value })}
-                    className="w-32 rounded-md border border-slate-600 bg-slate-700 px-2 py-1 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-32 rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                   />
                   <button
                     onClick={() => handleRun(chain.id)}
                     disabled={running === chain.id}
-                    className="rounded-md bg-green-600 px-3 py-1 text-sm font-medium text-white hover:bg-green-500 disabled:opacity-50"
+                    className="rounded-lg bg-green-600 px-3 py-2.5 text-sm font-medium text-white shadow-lg shadow-green-500/20 transition-all duration-200 hover:bg-green-500 disabled:opacity-50"
                   >
                     {running === chain.id ? 'Running...' : 'Run Chain'}
                   </button>
@@ -424,60 +432,63 @@ function KnowledgeSection() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
-        <input
-          type="text"
-          placeholder="Search entries..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[200px] rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-        <button onClick={() => { resetForm(); setShowForm(!showForm); }} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">
-          {showForm && !editingId ? 'Cancel' : 'New Entry'}
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <input
+            type="text"
+            placeholder="Search entries..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+          />
+        </div>
+        <button onClick={() => { resetForm(); setShowForm(!showForm); }} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30">
+          {showForm && !editingId ? 'Cancel' : <><Plus className="h-4 w-4" /> New Entry</>}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="rounded-lg border border-slate-700 bg-slate-800 p-5 space-y-4">
+        <form onSubmit={handleSubmit} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-6 shadow-lg shadow-black/20 space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-300">Title</label>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Entry title" className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Title</label>
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Entry title" className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-300">Content</label>
-            <textarea value={content} onChange={(e) => setContent(e.target.value)} required rows={5} placeholder="Content..." className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Content</label>
+            <textarea value={content} onChange={(e) => setContent(e.target.value)} required rows={5} placeholder="Content..." className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Tags (comma-separated)</label>
-              <input type="text" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="e.g. react, api, deployment" className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Tags (comma-separated)</label>
+              <input type="text" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="e.g. react, api, deployment" className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Author Agent (optional)</label>
-              <select value={authorAgent} onChange={(e) => setAuthorAgent(e.target.value)} className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Author Agent (optional)</label>
+              <select value={authorAgent} onChange={(e) => setAuthorAgent(e.target.value)} className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                 <option value="">None</option>
                 {agents?.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
             </div>
           </div>
           <div className="flex gap-2">
-            <button type="submit" disabled={submitting} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+            <button type="submit" disabled={submitting} className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30 disabled:opacity-50">
               {submitting ? 'Saving...' : editingId ? 'Update Entry' : 'Create Entry'}
             </button>
             {editingId && (
-              <button type="button" onClick={resetForm} className="rounded-md bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-500">Cancel Edit</button>
+              <button type="button" onClick={resetForm} className="rounded-lg bg-slate-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-500 transition-all duration-200">Cancel Edit</button>
             )}
           </div>
         </form>
       )}
 
       {filtered && filtered.length === 0 ? (
-        <div className="rounded-lg border border-slate-700 bg-slate-800 py-12 text-center text-slate-500">No entries found.</div>
+        <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 py-16 text-center shadow-lg shadow-black/20 text-slate-500">No entries found.</div>
       ) : (
         <div className="space-y-3">
           {filtered?.map((entry) => {
             const entryTags = entry.tags ? entry.tags.split(',').map((t) => t.trim()).filter(Boolean) : [];
             return (
-              <div key={entry.id} className="rounded-lg border border-slate-700 bg-slate-800 p-5">
+              <div key={entry.id} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-5 shadow-lg shadow-black/20 backdrop-blur-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
                     <h3 className="text-base font-semibold text-slate-100">{entry.title}</h3>
@@ -493,8 +504,8 @@ function KnowledgeSection() {
                     </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <button onClick={() => startEdit(entry)} className="text-xs text-indigo-400 hover:text-indigo-300">Edit</button>
-                    <button onClick={() => handleDelete(entry.id)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
+                    <button onClick={() => startEdit(entry)} className="inline-flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300"><Edit3 className="h-3 w-3" /> Edit</button>
+                    <button onClick={() => handleDelete(entry.id)} className="inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300"><Trash2 className="h-3 w-3" /> Delete</button>
                   </div>
                 </div>
               </div>
