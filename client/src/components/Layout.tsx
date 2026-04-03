@@ -31,7 +31,7 @@ export default function Layout() {
       >
         <div className="flex h-16 items-center gap-2 border-b border-slate-700 px-6">
           <span className="text-xl font-bold tracking-wider text-indigo-400">
-            ALINGED
+            HIVEMIND
           </span>
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto p-4">
@@ -84,7 +84,7 @@ export default function Layout() {
             </svg>
           </button>
           <span className="ml-3 text-lg font-bold text-indigo-400">
-            ALINGED
+            HIVEMIND
           </span>
         </header>
 

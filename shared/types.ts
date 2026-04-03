@@ -1,4 +1,4 @@
-// Shared types for Alinged AI Agent Orchestration System
+// Shared types for HiveMind AI Agent Orchestration System
 
 export interface Provider {
   id: number;

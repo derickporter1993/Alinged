@@ -34,7 +34,7 @@ const httpServer = createServer(app);
 initSocket(httpServer);
 
 httpServer.listen(PORT, () => {
-  console.log(`[Server] Alinged server running on http://localhost:${PORT}`);
+  console.log(`[Server] HiveMind server running on http://localhost:${PORT}`);
 });
 
 export default app;
