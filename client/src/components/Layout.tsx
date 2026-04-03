@@ -8,6 +8,12 @@ const navItems = [
   { to: '/org-chart', label: 'Org Chart', icon: '[O]' },
   { to: '/tickets', label: 'Tickets', icon: '[T]' },
   { to: '/budget', label: 'Budget', icon: '[B]' },
+  { to: '/collaboration', label: 'Collaboration', icon: '[C]' },
+  { to: '/automation', label: 'Automation', icon: '[Au]' },
+  { to: '/quality', label: 'Quality', icon: '[Q]' },
+  { to: '/intelligence', label: 'Intelligence', icon: '[I]' },
+  { to: '/integrations', label: 'Integrations', icon: '[In]' },
+  { to: '/observability', label: 'Observability', icon: '[Ob]' },
 ];
 
 export default function Layout() {
