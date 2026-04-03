@@ -1,0 +1,17 @@
+services:
+  hivemind:
+    build: .
+    ports:
+      - "3001:3001"
+    volumes:
+      - hivemind-data:/data
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_PATH=/data/hivemind.db
+    restart: unless-stopped
+
+volumes:
+  hivemind-data:

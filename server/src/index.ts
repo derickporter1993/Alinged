@@ -1,5 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
 import { createServer } from 'http';
 import { initSocket } from './socket.js';
 import './db.js';
@@ -20,11 +23,15 @@ import integrationsRouter from './routes/integrations.js';
 import observabilityRouter from './routes/observability.js';
 import { startScheduler } from './services/scheduler.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const app = express();
-const PORT = 3001;
+const PORT = Number(process.env.PORT) || 3001;
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: CORS_ORIGIN }));
 app.use(express.json());
 
 // Health check (unprotected)
@@ -50,6 +57,15 @@ app.use('/api/quality', qualityRouter);
 app.use('/api/intelligence', intelligenceRouter);
 app.use('/api/integrations', integrationsRouter);
 app.use('/api/observability', observabilityRouter);
+
+// Serve built client in production
+const clientDist = join(__dirname, '..', '..', 'client', 'dist');
+if (existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  app.get('*', (_req, res) => {
+    res.sendFile(join(clientDist, 'index.html'));
+  });
+}
 
 // Create HTTP server and attach Socket.io
 const httpServer = createServer(app);
