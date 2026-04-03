@@ -4,6 +4,9 @@ import { createServer } from 'http';
 import { initSocket } from './socket.js';
 import './db.js';
 
+import authRouter from './routes/auth.js';
+import { authMiddleware } from './middleware/auth.js';
+
 import goalsRouter from './routes/goals.js';
 import agentsRouter from './routes/agents.js';
 import ticketsRouter from './routes/tickets.js';
@@ -15,6 +18,7 @@ import qualityRouter from './routes/quality.js';
 import intelligenceRouter from './routes/intelligence.js';
 import integrationsRouter from './routes/integrations.js';
 import observabilityRouter from './routes/observability.js';
+import { startScheduler } from './services/scheduler.js';
 
 const app = express();
 const PORT = 3001;
@@ -23,12 +27,18 @@ const PORT = 3001;
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
-// Health check
+// Health check (unprotected)
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Mount routes
+// Auth routes (unprotected)
+app.use('/api/auth', authRouter);
+
+// All subsequent routes require authentication
+app.use('/api', authMiddleware);
+
+// Mount protected routes
 app.use('/api/goals', goalsRouter);
 app.use('/api/agents', agentsRouter);
 app.use('/api/tickets', ticketsRouter);
@@ -47,6 +57,7 @@ initSocket(httpServer);
 
 httpServer.listen(PORT, () => {
   console.log(`[Server] HiveMind server running on http://localhost:${PORT}`);
+  startScheduler();
 });
 
 export default app;

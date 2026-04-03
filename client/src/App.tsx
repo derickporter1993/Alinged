@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { type ReactNode } from 'react';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Goals from './pages/Goals';
@@ -12,12 +13,21 @@ import Quality from './pages/Quality';
 import Intelligence from './pages/Intelligence';
 import Integrations from './pages/Integrations';
 import Observability from './pages/Observability';
+import Login from './pages/Login';
+import { getAuthToken } from './api';
+
+function ProtectedRoute({ children }: { children: ReactNode }) {
+  const token = getAuthToken();
+  if (!token) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<Layout />}>
+        <Route path="/login" element={<Login />} />
+        <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/agents" element={<Agents />} />

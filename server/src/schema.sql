@@ -158,7 +158,7 @@ CREATE TABLE IF NOT EXISTS conversation_logs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   agent_id INTEGER NOT NULL REFERENCES agents(id),
   ticket_id INTEGER REFERENCES tickets(id),
-  role TEXT NOT NULL CHECK (role IN ('system','user','assistant')),
+  role TEXT NOT NULL CHECK (role IN ('system','user','assistant','tool')),
   content TEXT NOT NULL,
   tokens INTEGER DEFAULT 0,
   created_at TEXT DEFAULT (datetime('now'))
@@ -191,5 +191,14 @@ CREATE TABLE IF NOT EXISTS agent_tools (
   tool_type TEXT NOT NULL CHECK (tool_type IN ('web_search','file_io','api_call','code_exec')),
   config TEXT,
   enabled INTEGER DEFAULT 1,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
+-- Users for authentication
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  name TEXT NOT NULL,
   created_at TEXT DEFAULT (datetime('now'))
 );

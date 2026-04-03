@@ -3,6 +3,8 @@ import OpenAI from 'openai';
 import db from '../db.js';
 import { getIO } from '../socket.js';
 import { recordUsage, checkBudget } from './costTracker.js';
+import { executeTool } from './toolExecutor.js';
+import { toAnthropicTools, toOpenAITools, getToolConfig } from './toolSchemas.js';
 
 interface TicketRow {
   id: number;
@@ -37,6 +39,16 @@ interface ValidationRuleRow {
   rule_type: string;
   rule_config: string;
 }
+
+interface AgentToolRow {
+  id: number;
+  agent_id: number;
+  tool_type: string;
+  config: string | null;
+  enabled: number;
+}
+
+const MAX_TOOL_ITERATIONS = 10;
 
 function logConversation(agentId: number, ticketId: number | null, role: string, content: string, tokens: number) {
   db.prepare(
@@ -157,6 +169,184 @@ function fireWebhooksSafe(event: string, payload: Record<string, unknown>) {
   }
 }
 
+// Extract the input string from tool call arguments based on tool type
+function extractToolInput(toolType: string, args: Record<string, unknown>): string {
+  switch (toolType) {
+    case 'web_search':
+      return (args.query as string) || '';
+    case 'code_exec':
+      return (args.code as string) || '';
+    case 'api_call':
+      return JSON.stringify(args);
+    case 'file_io':
+      return (args.path as string) || '';
+    default:
+      return JSON.stringify(args);
+  }
+}
+
+async function runWithToolsAnthropic(
+  client: Anthropic,
+  agent: AgentRow,
+  ticketId: number,
+  systemPrompt: string,
+  userMessage: string,
+  agentTools: AgentToolRow[],
+  io: ReturnType<typeof getIO>,
+): Promise<{ result: string; inputTokens: number; outputTokens: number }> {
+  const tools = toAnthropicTools(agentTools);
+  const messages: Anthropic.MessageParam[] = [{ role: 'user', content: userMessage }];
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+
+  for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
+    const response = await client.messages.create({
+      model: agent.model,
+      max_tokens: 4096,
+      system: systemPrompt,
+      messages,
+      ...(tools.length > 0 ? { tools } : {}),
+    });
+
+    totalInputTokens += response.usage.input_tokens;
+    totalOutputTokens += response.usage.output_tokens;
+
+    // Check if response contains tool use
+    const toolUseBlocks = response.content.filter(
+      (block): block is Anthropic.ContentBlockParam & { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> } =>
+        block.type === 'tool_use'
+    );
+
+    // Extract any text from the response
+    const textBlocks = response.content.filter(
+      (block): block is Anthropic.TextBlock => block.type === 'text'
+    );
+    const textResult = textBlocks.map((b) => b.text).join('');
+
+    if (textResult) {
+      io.emit(`ticket:progress:${ticketId}`, { ticketId, chunk: textResult });
+    }
+
+    if (toolUseBlocks.length === 0 || response.stop_reason === 'end_turn') {
+      // No tool calls - we're done
+      logConversation(agent.id, ticketId, 'assistant', textResult, totalOutputTokens);
+      return { result: textResult, inputTokens: totalInputTokens, outputTokens: totalOutputTokens };
+    }
+
+    // Process tool calls
+    messages.push({ role: 'assistant', content: response.content });
+
+    const toolResults: Anthropic.ToolResultBlockParam[] = [];
+    for (const toolCall of toolUseBlocks) {
+      const toolRow = agentTools.find((t) => t.tool_type === toolCall.name);
+      const config = toolRow ? getToolConfig(toolRow) : {};
+      const input = extractToolInput(toolCall.name, toolCall.input as Record<string, unknown>);
+
+      const toolResult = await executeTool(toolCall.name, config, input);
+
+      logConversation(agent.id, ticketId, 'tool',
+        `Tool: ${toolCall.name} | Input: ${input.slice(0, 200)} | Output: ${(toolResult.output || toolResult.error || '').slice(0, 200)}`, 0);
+
+      db.prepare('INSERT INTO activity (type, message, metadata) VALUES (?, ?, ?)')
+        .run('tool_executed', `Agent "${agent.name}" used tool "${toolCall.name}"`,
+          JSON.stringify({ agentId: agent.id, ticketId, tool: toolCall.name, success: toolResult.success }));
+
+      toolResults.push({
+        type: 'tool_result',
+        tool_use_id: toolCall.id,
+        content: toolResult.success ? toolResult.output : (toolResult.error || 'Tool execution failed'),
+      });
+    }
+
+    messages.push({ role: 'user', content: toolResults });
+  }
+
+  // Exceeded max iterations - return whatever text we have
+  logConversation(agent.id, ticketId, 'assistant', '[Max tool iterations reached]', totalOutputTokens);
+  return { result: '[Agent reached maximum tool call limit]', inputTokens: totalInputTokens, outputTokens: totalOutputTokens };
+}
+
+async function runWithToolsOpenAI(
+  client: OpenAI,
+  agent: AgentRow,
+  ticketId: number,
+  systemPrompt: string,
+  userMessage: string,
+  agentTools: AgentToolRow[],
+  io: ReturnType<typeof getIO>,
+): Promise<{ result: string; inputTokens: number; outputTokens: number }> {
+  const tools = toOpenAITools(agentTools);
+  const messages: OpenAI.ChatCompletionMessageParam[] = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userMessage },
+  ];
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+
+  for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
+    const response = await client.chat.completions.create({
+      model: agent.model,
+      messages,
+      max_tokens: 4096,
+      ...(tools.length > 0 ? { tools } : {}),
+    });
+
+    const choice = response.choices[0];
+    if (response.usage) {
+      totalInputTokens += response.usage.prompt_tokens;
+      totalOutputTokens += response.usage.completion_tokens;
+    }
+
+    const toolCalls = choice.message.tool_calls;
+
+    if (!toolCalls || toolCalls.length === 0) {
+      // No tool calls - we're done
+      const result = choice.message.content || '';
+      io.emit(`ticket:progress:${ticketId}`, { ticketId, chunk: result });
+      logConversation(agent.id, ticketId, 'assistant', result, totalOutputTokens);
+      return { result, inputTokens: totalInputTokens, outputTokens: totalOutputTokens };
+    }
+
+    // Emit any text content
+    if (choice.message.content) {
+      io.emit(`ticket:progress:${ticketId}`, { ticketId, chunk: choice.message.content });
+    }
+
+    // Add assistant message with tool calls
+    messages.push(choice.message);
+
+    // Process each tool call
+    for (const toolCall of toolCalls) {
+      const toolName = toolCall.function.name;
+      let args: Record<string, unknown> = {};
+      try { args = JSON.parse(toolCall.function.arguments); } catch { /* use empty */ }
+
+      const toolRow = agentTools.find((t) => t.tool_type === toolName);
+      const config = toolRow ? getToolConfig(toolRow) : {};
+      const input = extractToolInput(toolName, args);
+
+      const toolResult = await executeTool(toolName, config, input);
+
+      logConversation(agent.id, ticketId, 'tool',
+        `Tool: ${toolName} | Input: ${input.slice(0, 200)} | Output: ${(toolResult.output || toolResult.error || '').slice(0, 200)}`, 0);
+
+      db.prepare('INSERT INTO activity (type, message, metadata) VALUES (?, ?, ?)')
+        .run('tool_executed', `Agent "${agent.name}" used tool "${toolName}"`,
+          JSON.stringify({ agentId: agent.id, ticketId, tool: toolName, success: toolResult.success }));
+
+      messages.push({
+        role: 'tool',
+        tool_call_id: toolCall.id,
+        content: toolResult.success ? toolResult.output : (toolResult.error || 'Tool execution failed'),
+      });
+    }
+  }
+
+  // Exceeded max iterations
+  logConversation(agent.id, ticketId, 'assistant', '[Max tool iterations reached]', totalOutputTokens);
+  return { result: '[Agent reached maximum tool call limit]', inputTokens: totalInputTokens, outputTokens: totalOutputTokens };
+}
+
 export async function runTicket(ticketId: number): Promise<void> {
   const io = getIO();
 
@@ -197,63 +387,89 @@ export async function runTicket(ticketId: number): Promise<void> {
   logConversation(agent.id, ticketId, 'system', systemPrompt, 0);
   logConversation(agent.id, ticketId, 'user', userMessage, 0);
 
+  // Load agent's enabled tools
+  const agentTools = db.prepare(
+    'SELECT * FROM agent_tools WHERE agent_id = ? AND enabled = 1'
+  ).all(agent.id) as AgentToolRow[];
+
   try {
-    let result = '';
-    let inputTokens = 0;
-    let outputTokens = 0;
+    let result: string;
+    let inputTokens: number;
+    let outputTokens: number;
 
     const providerName = provider.name.toLowerCase();
+    const hasTools = agentTools.length > 0;
 
     if (providerName.includes('anthropic') || providerName.includes('claude')) {
       const client = new Anthropic({ apiKey: provider.api_key, ...(provider.base_url ? { baseURL: provider.base_url } : {}) });
 
-      const stream = client.messages.stream({
-        model: agent.model,
-        max_tokens: 4096,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userMessage }],
-      });
+      if (hasTools) {
+        // Use tool execution loop (non-streaming for tool support)
+        ({ result, inputTokens, outputTokens } = await runWithToolsAnthropic(
+          client, agent, ticketId, systemPrompt, userMessage, agentTools, io
+        ));
+      } else {
+        // Original streaming path for simple execution
+        result = '';
+        const stream = client.messages.stream({
+          model: agent.model,
+          max_tokens: 4096,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userMessage }],
+        });
 
-      stream.on('text', (text) => {
-        result += text;
-        io.emit(`ticket:progress:${ticketId}`, { ticketId, chunk: text });
-      });
+        stream.on('text', (text) => {
+          result += text;
+          io.emit(`ticket:progress:${ticketId}`, { ticketId, chunk: text });
+        });
 
-      const finalMessage = await stream.finalMessage();
-      inputTokens = finalMessage.usage.input_tokens;
-      outputTokens = finalMessage.usage.output_tokens;
+        const finalMessage = await stream.finalMessage();
+        inputTokens = finalMessage.usage.input_tokens;
+        outputTokens = finalMessage.usage.output_tokens;
+        logConversation(agent.id, ticketId, 'assistant', result, outputTokens);
+      }
 
     } else {
       const client = new OpenAI({ apiKey: provider.api_key, ...(provider.base_url ? { baseURL: provider.base_url } : {}) });
 
-      const stream = await client.chat.completions.create({
-        model: agent.model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage },
-        ],
-        max_tokens: 4096,
-        stream: true,
-      });
+      if (hasTools) {
+        // Use tool execution loop (non-streaming for tool support)
+        ({ result, inputTokens, outputTokens } = await runWithToolsOpenAI(
+          client, agent, ticketId, systemPrompt, userMessage, agentTools, io
+        ));
+      } else {
+        // Original streaming path for simple execution
+        result = '';
+        inputTokens = 0;
+        outputTokens = 0;
 
-      for await (const chunk of stream) {
-        const content = chunk.choices[0]?.delta?.content || '';
-        if (content) {
-          result += content;
-          io.emit(`ticket:progress:${ticketId}`, { ticketId, chunk: content });
+        const stream = await client.chat.completions.create({
+          model: agent.model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userMessage },
+          ],
+          max_tokens: 4096,
+          stream: true,
+        });
+
+        for await (const chunk of stream) {
+          const content = chunk.choices[0]?.delta?.content || '';
+          if (content) {
+            result += content;
+            io.emit(`ticket:progress:${ticketId}`, { ticketId, chunk: content });
+          }
+          if (chunk.usage) {
+            inputTokens = chunk.usage.prompt_tokens || 0;
+            outputTokens = chunk.usage.completion_tokens || 0;
+          }
         }
-        if (chunk.usage) {
-          inputTokens = chunk.usage.prompt_tokens || 0;
-          outputTokens = chunk.usage.completion_tokens || 0;
-        }
+
+        if (inputTokens === 0) inputTokens = Math.ceil((systemPrompt.length + userMessage.length) / 4);
+        if (outputTokens === 0) outputTokens = Math.ceil(result.length / 4);
+        logConversation(agent.id, ticketId, 'assistant', result, outputTokens);
       }
-
-      if (inputTokens === 0) inputTokens = Math.ceil((systemPrompt.length + userMessage.length) / 4);
-      if (outputTokens === 0) outputTokens = Math.ceil(result.length / 4);
     }
-
-    // Log assistant response
-    logConversation(agent.id, ticketId, 'assistant', result, outputTokens);
 
     // Validate output
     const validation = validateOutput(agent.id, result);

@@ -1,5 +1,7 @@
 import { Server as SocketIOServer } from 'socket.io';
 import type { Server as HTTPServer } from 'http';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from './middleware/auth.js';
 
 let io: SocketIOServer;
 
@@ -9,6 +11,21 @@ export function initSocket(httpServer: HTTPServer): SocketIOServer {
       origin: 'http://localhost:5173',
       methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     },
+  });
+
+  // Authenticate socket connections
+  io.use((socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if (!token) {
+      next(new Error('Authentication required'));
+      return;
+    }
+    try {
+      jwt.verify(token, JWT_SECRET);
+      next();
+    } catch {
+      next(new Error('Invalid or expired token'));
+    }
   });
 
   io.on('connection', (socket) => {

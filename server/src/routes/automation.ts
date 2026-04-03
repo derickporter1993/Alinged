@@ -2,6 +2,7 @@ import { Router } from 'express';
 import db from '../db.js';
 import { getIO } from '../socket.js';
 import { fireTriggers } from '../services/triggerEngine.js';
+import { registerSchedule, unregisterSchedule, updateSchedule, computeNextRun } from '../services/scheduler.js';
 
 const router = Router();
 
@@ -39,8 +40,11 @@ router.post('/schedules', (req, res) => {
     agent_id || null,
     priority || 0,
     cron_expression,
-    null // next_run set to null for MVP; a cron runner would compute this
+    computeNextRun(cron_expression)
   );
+
+  const scheduleId = Number(result.lastInsertRowid);
+  registerSchedule(scheduleId);
 
   const schedule = db.prepare(`
     SELECT s.*, a.name AS agent_name, g.title AS goal_title
@@ -48,7 +52,7 @@ router.post('/schedules', (req, res) => {
     LEFT JOIN agents a ON s.agent_id = a.id
     LEFT JOIN goals g ON s.goal_id = g.id
     WHERE s.id = ?
-  `).get(result.lastInsertRowid);
+  `).get(scheduleId);
 
   res.status(201).json(schedule);
 });
@@ -84,6 +88,8 @@ router.patch('/schedules/:id', (req, res) => {
   values.push(id);
   db.prepare(`UPDATE schedules SET ${fields.join(', ')} WHERE id = ?`).run(...values);
 
+  updateSchedule(Number(id));
+
   const schedule = db.prepare(`
     SELECT s.*, a.name AS agent_name, g.title AS goal_title
     FROM schedules s
@@ -105,6 +111,7 @@ router.delete('/schedules/:id', (req, res) => {
     return;
   }
 
+  unregisterSchedule(Number(id));
   db.prepare(`DELETE FROM schedules WHERE id = ?`).run(id);
   res.json({ message: 'Schedule deleted' });
 });
@@ -131,8 +138,9 @@ router.post('/schedules/:id/trigger', (req, res) => {
     schedule.priority || 0
   );
 
-  // Update last_run
-  db.prepare(`UPDATE schedules SET last_run = datetime('now') WHERE id = ?`).run(id);
+  // Update last_run and next_run
+  const nextRun = computeNextRun(schedule.cron_expression as string);
+  db.prepare(`UPDATE schedules SET last_run = datetime('now'), next_run = ? WHERE id = ?`).run(nextRun, id);
 
   const ticket = db.prepare(`
     SELECT t.*, a.name AS agent_name, g.title AS goal_title

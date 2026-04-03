@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: '[D]' },
@@ -18,6 +19,7 @@ const navItems = [
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-900 text-slate-100">
@@ -62,8 +64,16 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
-        <div className="border-t border-slate-700 p-4 text-xs text-slate-500">
-          AI Agent Orchestration
+        <div className="border-t border-slate-700 p-4">
+          {user && (
+            <div className="mb-2 truncate text-xs text-slate-400">{user.name}</div>
+          )}
+          <button
+            onClick={logout}
+            className="w-full rounded-md px-3 py-1.5 text-xs text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200"
+          >
+            Sign Out
+          </button>
         </div>
       </aside>
 

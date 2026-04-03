@@ -232,7 +232,7 @@ export interface ConversationLog {
   id: number;
   agent_id: number;
   ticket_id: number | null;
-  role: 'system' | 'user' | 'assistant';
+  role: 'system' | 'user' | 'assistant' | 'tool';
   content: string;
   tokens: number;
   created_at: string;
@@ -253,4 +253,18 @@ export interface CostForecast {
   weeklyRate: number;
   monthlyProjection: number;
   daysOfData: number;
+}
+
+// --- Authentication ---
+
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  created_at: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
 }
