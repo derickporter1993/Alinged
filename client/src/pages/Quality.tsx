@@ -420,11 +420,11 @@ function VersionsSection() {
   return (
     <div className="space-y-4">
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-300">Select Ticket</label>
+        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Select Ticket</label>
         <select
           value={selectedTicket}
           onChange={(e) => setSelectedTicket(e.target.value)}
-          className="w-full max-w-md rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full max-w-md rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
         >
           <option value="">Choose a ticket...</option>
           {tickets?.map((t) => <option key={t.id} value={t.id}>#{t.id} - {t.title}</option>)}
@@ -432,20 +432,26 @@ function VersionsSection() {
       </div>
 
       {!selectedTicket && (
-        <div className="rounded-lg border border-slate-700 bg-slate-800 py-12 text-center text-slate-500">Select a ticket to view its version history.</div>
+        <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 py-16 text-center shadow-lg shadow-black/20">
+          <Clock className="mx-auto h-8 w-8 text-slate-600 mb-3" />
+          <p className="text-slate-500">Select a ticket to view its version history.</p>
+        </div>
       )}
 
       {selectedTicket && loading && <div className="text-slate-400 py-8 text-center">Loading versions...</div>}
       {selectedTicket && error && <div className="text-red-400 py-8 text-center">Error: {error}</div>}
 
       {selectedTicket && versions && versions.length === 0 && (
-        <div className="rounded-lg border border-slate-700 bg-slate-800 py-12 text-center text-slate-500">No versions for this ticket.</div>
+        <div className="rounded-xl border border-slate-700/50 bg-slate-800/50 py-16 text-center shadow-lg shadow-black/20">
+          <Clock className="mx-auto h-8 w-8 text-slate-600 mb-3" />
+          <p className="text-slate-500">No versions for this ticket.</p>
+        </div>
       )}
 
       {selectedTicket && versions && versions.length > 0 && (
         <div className="relative space-y-0">
           {/* Timeline line */}
-          <div className="absolute left-4 top-0 bottom-0 w-px bg-slate-700" />
+          <div className="absolute left-4 top-0 bottom-0 w-px bg-slate-700/50" />
           {versions.sort((a, b) => b.version_number - a.version_number).map((v) => (
             <div key={v.id} className="relative pl-10 pb-4">
               {/* Dot */}
