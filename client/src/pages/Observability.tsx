@@ -54,13 +54,13 @@ function ConversationLogsSection() {
   queryParams.set('limit', String(perPage));
 
   const { data: logs, loading, error, refetch } = useFetch<ConversationLog[]>(
-    `/api/conversation-logs?${queryParams.toString()}`,
+    `/api/observability/logs?${queryParams.toString()}`,
   );
 
   async function handleClearOld() {
     if (!confirm('Clear conversation logs older than 30 days?')) return;
     try {
-      await fetchApi('/api/conversation-logs/clear-old', { method: 'DELETE' });
+      await fetchApi('/api/observability/logs?days=30', { method: 'DELETE' });
       refetch();
     } catch (err) {
       console.error('Failed to clear old logs:', err);
@@ -165,7 +165,7 @@ function ConversationLogsSection() {
 /* ─── Cost Forecast ─── */
 
 function CostForecastSection() {
-  const { data: forecast, loading, error } = useFetch<CostForecast>('/api/budget/forecast');
+  const { data: forecast, loading, error } = useFetch<CostForecast>('/api/observability/forecast');
 
   if (loading) return <div className="text-slate-400 py-8 text-center">Loading forecast...</div>;
   if (error) return <div className="text-red-400 py-8 text-center">Error: {error}</div>;
@@ -209,7 +209,7 @@ function CostForecastSection() {
 /* ─── Dependency Graph ─── */
 
 function DependencyGraphSection() {
-  const { data: deps, loading, error, refetch } = useFetch<TicketDependency[]>('/api/ticket-dependencies');
+  const { data: deps, loading, error, refetch } = useFetch<TicketDependency[]>('/api/observability/dependencies');
   const { data: tickets } = useFetch<Ticket[]>('/api/tickets');
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -221,7 +221,7 @@ function DependencyGraphSection() {
     if (form.ticket_id === form.depends_on_id) return;
     setSubmitting(true);
     try {
-      await fetchApi('/api/ticket-dependencies', {
+      await fetchApi('/api/observability/dependencies', {
         method: 'POST',
         body: JSON.stringify({
           ticket_id: Number(form.ticket_id),
@@ -240,7 +240,7 @@ function DependencyGraphSection() {
 
   async function handleDelete(id: number) {
     try {
-      await fetchApi(`/api/ticket-dependencies/${id}`, { method: 'DELETE' });
+      await fetchApi(`/api/observability/dependencies/${id}`, { method: 'DELETE' });
       refetch();
     } catch (err) {
       console.error('Failed to delete dependency:', err);

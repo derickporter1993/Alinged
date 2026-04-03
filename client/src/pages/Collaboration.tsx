@@ -51,7 +51,7 @@ export default function Collaboration() {
 /* ------------------------------------------------------------------ */
 
 function MessagesSection() {
-  const { data: messages, loading, error, refetch } = useFetch<AgentMessage[]>('/api/agent-messages');
+  const { data: messages, loading, error, refetch } = useFetch<AgentMessage[]>('/api/collaboration/messages');
   const { data: agents } = useFetch<Agent[]>('/api/agents');
   const { data: tickets } = useFetch<Ticket[]>('/api/tickets');
 
@@ -68,7 +68,7 @@ function MessagesSection() {
     if (!fromAgent || !toAgent || !content.trim()) return;
     setSubmitting(true);
     try {
-      await fetchApi('/api/agent-messages', {
+      await fetchApi('/api/collaboration/messages', {
         method: 'POST',
         body: JSON.stringify({
           from_agent_id: Number(fromAgent),
@@ -183,7 +183,7 @@ function MessagesSection() {
 /* ------------------------------------------------------------------ */
 
 function ReviewChainsSection() {
-  const { data: chains, loading, error, refetch } = useFetch<ReviewChain[]>('/api/review-chains');
+  const { data: chains, loading, error, refetch } = useFetch<ReviewChain[]>('/api/collaboration/review-chains');
   const { data: agents } = useFetch<Agent[]>('/api/agents');
 
   const [showForm, setShowForm] = useState(false);
@@ -212,7 +212,7 @@ function ReviewChainsSection() {
     if (!name.trim() || steps.length === 0) return;
     setSubmitting(true);
     try {
-      await fetchApi('/api/review-chains', {
+      await fetchApi('/api/collaboration/review-chains', {
         method: 'POST',
         body: JSON.stringify({ name: name.trim(), steps: JSON.stringify(steps) }),
       });
@@ -232,7 +232,7 @@ function ReviewChainsSection() {
     if (!tid) return;
     setRunning(chainId);
     try {
-      await fetchApi(`/api/review-chains/${chainId}/run`, {
+      await fetchApi(`/api/collaboration/review-chains/${chainId}/run`, {
         method: 'POST',
         body: JSON.stringify({ ticket_id: Number(tid) }),
       });
@@ -245,7 +245,7 @@ function ReviewChainsSection() {
 
   async function handleDelete(id: number) {
     try {
-      await fetchApi(`/api/review-chains/${id}`, { method: 'DELETE' });
+      await fetchApi(`/api/collaboration/review-chains/${id}`, { method: 'DELETE' });
       refetch();
     } catch (err) {
       console.error('Failed to delete chain:', err);
@@ -345,7 +345,7 @@ function ReviewChainsSection() {
 /* ------------------------------------------------------------------ */
 
 function KnowledgeSection() {
-  const { data: entries, loading, error, refetch } = useFetch<KnowledgeBaseEntry[]>('/api/knowledge-base');
+  const { data: entries, loading, error, refetch } = useFetch<KnowledgeBaseEntry[]>('/api/collaboration/knowledge');
   const { data: agents } = useFetch<Agent[]>('/api/agents');
 
   const [search, setSearch] = useState('');
@@ -394,9 +394,9 @@ function KnowledgeSection() {
     };
     try {
       if (editingId) {
-        await fetchApi(`/api/knowledge-base/${editingId}`, { method: 'PATCH', body: JSON.stringify(payload) });
+        await fetchApi(`/api/collaboration/knowledge/${editingId}`, { method: 'PATCH', body: JSON.stringify(payload) });
       } else {
-        await fetchApi('/api/knowledge-base', { method: 'POST', body: JSON.stringify(payload) });
+        await fetchApi('/api/collaboration/knowledge', { method: 'POST', body: JSON.stringify(payload) });
       }
       resetForm();
       refetch();
@@ -409,7 +409,7 @@ function KnowledgeSection() {
 
   async function handleDelete(id: number) {
     try {
-      await fetchApi(`/api/knowledge-base/${id}`, { method: 'DELETE' });
+      await fetchApi(`/api/collaboration/knowledge/${id}`, { method: 'DELETE' });
       refetch();
     } catch (err) {
       console.error('Failed to delete entry:', err);

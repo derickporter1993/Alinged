@@ -42,7 +42,7 @@ export default function Automation() {
 /* ─── Schedules ─── */
 
 function SchedulesSection() {
-  const { data: schedules, loading, error, refetch } = useFetch<Schedule[]>('/api/schedules');
+  const { data: schedules, loading, error, refetch } = useFetch<Schedule[]>('/api/automation/schedules');
   const { data: goals } = useFetch<Goal[]>('/api/goals');
   const { data: agents } = useFetch<Agent[]>('/api/agents');
 
@@ -62,7 +62,7 @@ function SchedulesSection() {
     if (!form.title.trim() || !form.cron_expression.trim()) return;
     setSubmitting(true);
     try {
-      await fetchApi('/api/schedules', {
+      await fetchApi('/api/automation/schedules', {
         method: 'POST',
         body: JSON.stringify({
           title: form.title.trim(),
@@ -85,7 +85,7 @@ function SchedulesSection() {
 
   async function handleToggle(id: number, enabled: number) {
     try {
-      await fetchApi(`/api/schedules/${id}`, {
+      await fetchApi(`/api/automation/schedules/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({ enabled: enabled ? 0 : 1 }),
       });
@@ -97,7 +97,7 @@ function SchedulesSection() {
 
   async function handleTrigger(id: number) {
     try {
-      await fetchApi(`/api/schedules/${id}/trigger`, { method: 'POST' });
+      await fetchApi(`/api/automation/schedules/${id}/trigger`, { method: 'POST' });
       refetch();
     } catch (err) {
       console.error('Failed to trigger schedule:', err);
@@ -213,7 +213,7 @@ const TRIGGER_EVENTS = ['ticket_done', 'ticket_failed', 'ticket_review', 'budget
 const ACTION_TYPES = ['create_ticket', 'notify', 'assign_agent'] as const;
 
 function TriggersSection() {
-  const { data: triggers, loading, error, refetch } = useFetch<WorkflowTrigger[]>('/api/workflow-triggers');
+  const { data: triggers, loading, error, refetch } = useFetch<WorkflowTrigger[]>('/api/automation/triggers');
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -230,7 +230,7 @@ function TriggersSection() {
     setSubmitting(true);
     try {
       const actionPayload = JSON.parse(form.action_config);
-      await fetchApi('/api/workflow-triggers', {
+      await fetchApi('/api/automation/triggers', {
         method: 'POST',
         body: JSON.stringify({
           name: form.name.trim(),
@@ -251,7 +251,7 @@ function TriggersSection() {
 
   async function handleToggle(id: number, enabled: number) {
     try {
-      await fetchApi(`/api/workflow-triggers/${id}`, {
+      await fetchApi(`/api/automation/triggers/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({ enabled: enabled ? 0 : 1 }),
       });

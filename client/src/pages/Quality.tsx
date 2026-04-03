@@ -40,7 +40,7 @@ export default function Quality() {
 /* ─── Checkpoints ─── */
 
 function CheckpointsSection() {
-  const { data: checkpoints, loading, error, refetch } = useFetch<Checkpoint[]>('/api/checkpoints');
+  const { data: checkpoints, loading, error, refetch } = useFetch<Checkpoint[]>('/api/quality/checkpoints');
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [notes, setNotes] = useState<Record<number, string>>({});
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
@@ -49,7 +49,7 @@ function CheckpointsSection() {
   async function handleResolve(id: number, status: 'approved' | 'rejected') {
     setSubmitting(id);
     try {
-      await fetchApi(`/api/checkpoints/${id}`, {
+      await fetchApi(`/api/quality/checkpoints/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({ status, reviewer_notes: notes[id]?.trim() || null }),
       });
@@ -164,7 +164,7 @@ function CheckpointsSection() {
 const RULE_TYPES: ValidationRule['rule_type'][] = ['regex', 'min_length', 'max_length', 'json_schema', 'contains', 'not_contains'];
 
 function ValidationSection() {
-  const { data: rules, loading, error, refetch } = useFetch<ValidationRule[]>('/api/validation-rules');
+  const { data: rules, loading, error, refetch } = useFetch<ValidationRule[]>('/api/quality/validation-rules');
   const { data: agents } = useFetch<Agent[]>('/api/agents');
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -183,7 +183,7 @@ function ValidationSection() {
     if (!form.name.trim() || !form.rule_config.trim()) return;
     setSubmitting(true);
     try {
-      await fetchApi('/api/validation-rules', {
+      await fetchApi('/api/quality/validation-rules', {
         method: 'POST',
         body: JSON.stringify({
           name: form.name.trim(),
@@ -204,7 +204,7 @@ function ValidationSection() {
 
   async function handleToggle(id: number, enabled: number) {
     try {
-      await fetchApi(`/api/validation-rules/${id}`, {
+      await fetchApi(`/api/quality/validation-rules/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({ enabled: enabled ? 0 : 1 }),
       });
@@ -379,7 +379,7 @@ function VersionsSection() {
   const { data: tickets } = useFetch<Ticket[]>('/api/tickets');
   const [selectedTicket, setSelectedTicket] = useState('');
   const { data: versions, loading, error, refetch } = useFetch<TicketVersion[]>(
-    selectedTicket ? `/api/tickets/${selectedTicket}/versions` : '',
+    selectedTicket ? `/api/quality/versions/${selectedTicket}` : '',
   );
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [rollingBack, setRollingBack] = useState<number | null>(null);
@@ -396,9 +396,8 @@ function VersionsSection() {
     if (!selectedTicket) return;
     setRollingBack(versionId);
     try {
-      await fetchApi(`/api/tickets/${selectedTicket}/rollback`, {
+      await fetchApi(`/api/quality/versions/${selectedTicket}/rollback/${versionId}`, {
         method: 'POST',
-        body: JSON.stringify({ version_id: versionId }),
       });
       refetch();
     } catch (err) {

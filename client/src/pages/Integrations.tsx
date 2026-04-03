@@ -42,7 +42,7 @@ export default function Integrations() {
 const COMMON_EVENTS = ['ticket_created', 'ticket_done', 'ticket_failed', 'agent_started', 'agent_stopped', 'budget_alert', 'checkpoint_pending'];
 
 function WebhooksSection() {
-  const { data: webhooks, loading, error, refetch } = useFetch<Webhook[]>('/api/webhooks');
+  const { data: webhooks, loading, error, refetch } = useFetch<Webhook[]>('/api/integrations/webhooks');
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [testing, setTesting] = useState<number | null>(null);
@@ -65,7 +65,7 @@ function WebhooksSection() {
     if (!form.name.trim() || !form.url.trim() || form.events.length === 0) return;
     setSubmitting(true);
     try {
-      await fetchApi('/api/webhooks', {
+      await fetchApi('/api/integrations/webhooks', {
         method: 'POST',
         body: JSON.stringify({
           name: form.name.trim(),
@@ -87,7 +87,7 @@ function WebhooksSection() {
   async function handleTest(id: number) {
     setTesting(id);
     try {
-      await fetchApi(`/api/webhooks/${id}/test`, { method: 'POST' });
+      await fetchApi(`/api/integrations/webhooks/${id}/test`, { method: 'POST' });
     } catch (err) {
       console.error('Failed to test webhook:', err);
     } finally {
@@ -97,7 +97,7 @@ function WebhooksSection() {
 
   async function handleToggle(id: number, enabled: number) {
     try {
-      await fetchApi(`/api/webhooks/${id}`, {
+      await fetchApi(`/api/integrations/webhooks/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({ enabled: enabled ? 0 : 1 }),
       });
@@ -109,7 +109,7 @@ function WebhooksSection() {
 
   async function handleDelete(id: number) {
     try {
-      await fetchApi(`/api/webhooks/${id}`, { method: 'DELETE' });
+      await fetchApi(`/api/integrations/webhooks/${id}`, { method: 'DELETE' });
       refetch();
     } catch (err) {
       console.error('Failed to delete webhook:', err);
@@ -223,7 +223,7 @@ function AgentToolsSection() {
   const { data: agents } = useFetch<Agent[]>('/api/agents');
   const [selectedAgent, setSelectedAgent] = useState('');
   const { data: tools, loading, error, refetch } = useFetch<AgentTool[]>(
-    selectedAgent ? `/api/agents/${selectedAgent}/tools` : '',
+    selectedAgent ? `/api/integrations/tools/agent/${selectedAgent}` : '',
   );
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -234,9 +234,10 @@ function AgentToolsSection() {
     if (!selectedAgent) return;
     setSubmitting(true);
     try {
-      await fetchApi(`/api/agents/${selectedAgent}/tools`, {
+      await fetchApi('/api/integrations/tools', {
         method: 'POST',
         body: JSON.stringify({
+          agent_id: Number(selectedAgent),
           tool_type: form.tool_type,
           config: form.config.trim() || null,
         }),
@@ -253,7 +254,7 @@ function AgentToolsSection() {
 
   async function handleToggle(id: number, enabled: number) {
     try {
-      await fetchApi(`/api/agent-tools/${id}`, {
+      await fetchApi(`/api/integrations/tools/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({ enabled: enabled ? 0 : 1 }),
       });
@@ -265,7 +266,7 @@ function AgentToolsSection() {
 
   async function handleDelete(id: number) {
     try {
-      await fetchApi(`/api/agent-tools/${id}`, { method: 'DELETE' });
+      await fetchApi(`/api/integrations/tools/${id}`, { method: 'DELETE' });
       refetch();
     } catch (err) {
       console.error('Failed to delete tool:', err);
@@ -411,7 +412,7 @@ function ImportExportSection() {
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      await fetchApi(`/api/${type}/import`, {
+      await fetchApi(`/api/integrations/import/${type}`, {
         method: 'POST',
         body: JSON.stringify({ items: Array.isArray(data) ? data : [data] }),
       });

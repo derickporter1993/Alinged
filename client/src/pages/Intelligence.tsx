@@ -153,7 +153,7 @@ function AssignmentSection() {
     setAssignError('');
     try {
       const res = await fetchApi<{ agent_name: string; agent_id: number; score: number }>(
-        '/api/intelligence/auto-assign',
+        '/api/intelligence/assign',
         {
           method: 'POST',
           body: JSON.stringify({
