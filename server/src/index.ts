@@ -10,6 +10,7 @@ import './db.js';
 import authRouter from './routes/auth.js';
 import { authMiddleware } from './middleware/auth.js';
 
+import providersRouter from './routes/providers.js';
 import goalsRouter from './routes/goals.js';
 import agentsRouter from './routes/agents.js';
 import ticketsRouter from './routes/tickets.js';
@@ -46,6 +47,7 @@ app.use('/api/auth', authRouter);
 app.use('/api', authMiddleware);
 
 // Mount protected routes
+app.use('/api/providers', providersRouter);
 app.use('/api/goals', goalsRouter);
 app.use('/api/agents', agentsRouter);
 app.use('/api/tickets', ticketsRouter);
