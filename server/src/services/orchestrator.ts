@@ -2,11 +2,13 @@ import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 import db from '../db.js';
 import { recordUsage } from './costTracker.js';
+import { runTicket } from './agentRunner.js';
 
 interface GoalRow {
   id: number;
   title: string;
   description: string | null;
+  autopilot: number;
 }
 
 interface AgentRow {
@@ -163,6 +165,23 @@ export async function decomposeGoal(goalId: number): Promise<CreatedTicket[]> {
       `Goal "${goal.title}" decomposed into ${createdTickets.length} tickets by agent "${agent.name}"`,
       JSON.stringify({ goalId, agentId: agent.id, ticketCount: createdTickets.length })
     );
+
+  // Autopilot: if enabled, automatically run all assigned tickets
+  if (goal.autopilot === 1) {
+    db.prepare(`INSERT INTO activity (type, message, metadata) VALUES (?, ?, ?)`)
+      .run('autopilot_started', `Autopilot running ${createdTickets.length} tickets for goal "${goal.title}"`,
+        JSON.stringify({ goalId }));
+
+    for (const t of createdTickets) {
+      if (t.agent_id) {
+        runTicket(t.id).catch((err) => {
+          db.prepare(`INSERT INTO activity (type, message, metadata) VALUES (?, ?, ?)`)
+            .run('autopilot_error', `Autopilot failed on ticket "${t.title}": ${err instanceof Error ? err.message : String(err)}`,
+              JSON.stringify({ ticketId: t.id, goalId }));
+        });
+      }
+    }
+  }
 
   return createdTickets;
 }
