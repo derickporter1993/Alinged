@@ -279,37 +279,37 @@ function ValidationSection() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <button onClick={() => setShowForm(!showForm)} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">
+        <button onClick={() => setShowForm(!showForm)} className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30">
           {showForm ? 'Cancel' : 'New Rule'}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="rounded-lg border border-slate-700 bg-slate-800 p-5 space-y-4">
+        <form onSubmit={handleCreate} className="rounded-xl border border-slate-700/50 bg-slate-800/50 p-6 shadow-lg shadow-black/20 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Rule Name</label>
-              <input type="text" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} required className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Output must start with uppercase" />
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Rule Name</label>
+              <input type="text" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} required className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder="e.g. Output must start with uppercase" />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-300">Agent (optional)</label>
-              <select value={form.agent_id} onChange={(e) => setForm((p) => ({ ...p, agent_id: e.target.value }))} className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Agent (optional)</label>
+              <select value={form.agent_id} onChange={(e) => setForm((p) => ({ ...p, agent_id: e.target.value }))} className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                 <option value="">All Agents</option>
                 {agents?.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-300">Rule Type</label>
-            <select value={form.rule_type} onChange={(e) => setForm((p) => ({ ...p, rule_type: e.target.value as ValidationRule['rule_type'] }))} className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Rule Type</label>
+            <select value={form.rule_type} onChange={(e) => setForm((p) => ({ ...p, rule_type: e.target.value as ValidationRule['rule_type'] }))} className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
               {RULE_TYPES.map((rt) => <option key={rt} value={rt}>{rt}</option>)}
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-300">Rule Config (JSON)</label>
-            <textarea value={form.rule_config} onChange={(e) => setForm((p) => ({ ...p, rule_config: e.target.value }))} rows={2} required className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm font-mono text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder={getConfigPlaceholder(form.rule_type)} />
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-slate-500">Rule Config (JSON)</label>
+            <textarea value={form.rule_config} onChange={(e) => setForm((p) => ({ ...p, rule_config: e.target.value }))} rows={2} required className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm font-mono text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" placeholder={getConfigPlaceholder(form.rule_type)} />
           </div>
-          <button type="submit" disabled={submitting} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50">
+          <button type="submit" disabled={submitting} className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30 disabled:opacity-50">
             {submitting ? 'Creating...' : 'Create Rule'}
           </button>
         </form>
@@ -317,19 +317,19 @@ function ValidationSection() {
 
       {/* Test Modal */}
       {testModal && (
-        <div className="rounded-lg border border-indigo-500/30 bg-slate-800 p-5 space-y-3">
+        <div className="rounded-xl border border-indigo-500/30 bg-slate-800/50 p-6 shadow-lg shadow-black/20 backdrop-blur-sm space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-slate-100">Test: {testModal.name}</h3>
-            <button onClick={() => { setTestModal(null); setTestText(''); setTestResult(null); }} className="text-sm text-slate-400 hover:text-slate-200">Close</button>
+            <button onClick={() => { setTestModal(null); setTestText(''); setTestResult(null); }} className="text-sm text-slate-400 hover:text-slate-200 transition-colors">Close</button>
           </div>
           <textarea
             value={testText}
             onChange={(e) => { setTestText(e.target.value); setTestResult(null); }}
             rows={3}
             placeholder="Paste text to test against this rule..."
-            className="w-full rounded-md border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-slate-600/50 bg-slate-900/50 px-4 py-2.5 text-sm text-white placeholder-slate-500 transition-all duration-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
           />
-          <button onClick={() => runLocalTest(testModal)} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">
+          <button onClick={() => runLocalTest(testModal)} className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 hover:bg-indigo-500 hover:shadow-indigo-500/30">
             Run Test
           </button>
           {testResult && (
